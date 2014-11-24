@@ -13,7 +13,7 @@ setup(
     license='BSD',
     author='liminspace',
     author_email='liminspace@gmail.com',
-    url='',  # todo додати url на github
+    url='https://github.com/liminspace/dj-utils',
     packages=find_packages(),  # exclude=('tests.*', 'tests', 'example')
     include_package_data=True,
     zip_safe=False,  # тому, що вкладаємо статику
