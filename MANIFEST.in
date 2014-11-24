@@ -1,0 +1,4 @@
+include README.txt
+recursive-include dj_utils/locale *
+recursive-include dj_utils/static *
+recursive-include dj_utils/templates *
