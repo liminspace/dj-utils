@@ -1,18 +1,13 @@
 # coding=utf-8
 from __future__ import absolute_import
-import base64
-from collections import defaultdict
-import hashlib
-import mimetypes
 import os
 import re
 import time
-import pytz
 import datetime
 from django.utils.dateparse import parse_datetime
-from django.utils.functional import lazy
 from django.utils import timezone
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 from dj_utils import settings as u_settings
 
 
@@ -94,6 +89,28 @@ def parse_datetime_aware(s, tz=None):
     return timezone.make_aware(d, tz or timezone.get_current_timezone())
 
 
+def long_number_readable(value):
+    """
+    Convert big integer (>=999) to readable form.
+    1000 => 1k.
+    2333 => 2.3k.
+    1000000 => 1 mln.
+    1258000 => 1.26 mln.
+    """
+    assert isinstance(value, (int, long))
+    if value < 1000:
+        return value
+    formats = (
+        (10 ** 6, 10 ** 3, u'%d', u'%.1f', _('k.')),
+        (10 ** 9, 10 ** 6, u'%d', u'%.2f', _(' mln.')),
+        (10 ** 12, 10 ** 9, u'%d', u'%.3f', _(' bln.')),
+    )
+    for m, d, inf, fnf, n in formats:
+        if value < m:
+            return ((inf if value % d == 0 else fnf) + n) % (value / float(d))
+    return value
+
+
 def log_to_file(msg, double_br=False, add_time=True, fn=None):
     fn = fn or os.path.join(settings.LOG_DIR, 'log.log')
     with open(fn, 'a') as f:
@@ -104,7 +121,10 @@ def log_to_file(msg, double_br=False, add_time=True, fn=None):
 
 
 def log_memory_usage(desc='test'):
-    import psutil
+    try:
+        import psutil
+    except ImportError:
+        raise ImportError("Can't import psutil. Please, install psutil (pip intall psutil).")
     proc = psutil.Process(os.getpid())
     mem = proc.get_memory_info()[0] / float(2 ** 20)
     log_to_file('%s: %s MB\n' % (desc, mem), add_time=False, fn=os.path.join(u_settings.LOG_DIR, 'memory_usage.log'))

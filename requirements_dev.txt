@@ -1,0 +1,8 @@
+Django==1.7.1
+Pillow==2.6.1
+django-localeurl==2.0.1
+django-modeltranslation==0.8
+django-redis==3.7.2
+pytz==2014.9
+redis==2.10.3
+simplejson==3.6.5

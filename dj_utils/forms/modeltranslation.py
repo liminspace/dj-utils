@@ -7,6 +7,7 @@ from modeltranslation.utils import build_localized_fieldname, get_language
 
 
 def formfield_exclude_translations(db_field, **kwargs):
+    """ only non-localized fields """
     if hasattr(db_field, 'translated_field'):
         return None
     if 'field' in kwargs:
@@ -30,6 +31,7 @@ def formfield_exclude_translations(db_field, **kwargs):
 
 
 def formfield_exclude_original(db_field, **kwargs):
+    """ only localized fields """
     trans_opts = translator.get_options_for_model(db_field.model)
     if db_field.name in trans_opts.fields:
         return None
@@ -46,6 +48,7 @@ def formfield_exclude_original(db_field, **kwargs):
 
 
 def formfield_exclude_irrelevant(db_field, **kwargs):
+    """ only localized fields """
     trans_opts = translator.get_options_for_model(db_field.model)
     if db_field.name in trans_opts.fields:
         return None

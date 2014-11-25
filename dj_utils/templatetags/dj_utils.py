@@ -5,13 +5,13 @@ from django import template
 from django.template.loader import get_template
 from django.http import QueryDict
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
 from django.utils.encoding import force_unicode
 from django.core.cache.utils import make_template_fragment_key
 from django.core.cache import cache
 from dj_utils import gravatar
 from dj_utils.tcache import cache_set
 from dj_utils.http import full_url
+from dj_utils.tools import long_number_readable
 
 
 register = template.Library()
@@ -206,28 +206,6 @@ def recurse(parser, token):
                        (params[2][1:-1] if len(params) == 3 else 'children'))
 
 
-def long_number_readable(value):
-    """
-    Convert big integer (>=999) to readable form.
-    1000 => 1k.
-    2333 => 2.3k.
-    1000000 => 1 mln.
-    1258000 => 1.26 mln.
-    """
-    assert isinstance(value, (int, long))
-    if value < 1000:
-        return value
-    formats = (
-        (10 ** 6, 10 ** 3, u'%d', u'%.1f', _('k.')),
-        (10 ** 9, 10 ** 6, u'%d', u'%.2f', _(' mln.')),
-        (10 ** 12, 10 ** 9, u'%d', u'%.3f', _(' bln.')),
-    )
-    for m, d, inf, fnf, n in formats:
-        if value < m:
-            return ((inf if value % d == 0 else fnf) + n) % (value / float(d))
-    return value
-
-
 @register.filter
 def humanize_long_number(value):
     """
@@ -407,7 +385,7 @@ def gravatar_profile_url(value):
     return gravatar.get_profile_url(value)
 
 
-def _get_amps(token=None):
+def _url_get_amps(token=None):
     l, r, amp = '', '', u'&amp;'
     if token and len(token) > 1:
         token = token.strip()
@@ -419,8 +397,8 @@ def _get_amps(token=None):
     return token, l, r
 
 
-def _getvars(context, token_=None, type_=None):
-    token, l, r = _get_amps(token_)
+def _url_getvars(context, token_=None, type_=None):
+    token, l, r = _url_get_amps(token_)
     gv = ''
     if type_:
         w, wo = type_ == 'with', type_ == 'without'
@@ -450,18 +428,18 @@ def _getvars(context, token_=None, type_=None):
 
 
 @register.simple_tag(takes_context=True)
-def getvars(context, token=None):
-    return mark_safe(_getvars(context, token))
+def url_getvars(context, token=None):
+    return mark_safe(_url_getvars(context, token))
 
 
 @register.simple_tag(takes_context=True)
-def getvars_with(context, token):
-    return mark_safe(_getvars(context, token, 'with'))
+def url_getvars_with(context, token):
+    return mark_safe(_url_getvars(context, token, 'with'))
 
 
 @register.simple_tag(takes_context=True)
-def getvars_without(context, token):
-    return mark_safe(_getvars(context, token, 'without'))
+def url_getvars_without(context, token):
+    return mark_safe(_url_getvars(context, token, 'without'))
 
 
 @register.simple_tag

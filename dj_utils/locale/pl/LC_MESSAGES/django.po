@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-25 13:26+0200\n"
+"POT-Creation-Date: 2014-11-25 21:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,25 +38,25 @@ msgstr ""
 msgid "Phone number"
 msgstr ""
 
-#: .\dj_utils\forms\modeltranslation.py:26
-#: .\dj_utils\forms\modeltranslation.py:65
+#: .\dj_utils\forms\modeltranslation.py:27
+#: .\dj_utils\forms\modeltranslation.py:68
 msgid " "
 msgstr ""
 
-#: .\dj_utils\forms\modeltranslation.py:27
-#: .\dj_utils\forms\modeltranslation.py:66
+#: .\dj_utils\forms\modeltranslation.py:28
+#: .\dj_utils\forms\modeltranslation.py:69
 msgid "This field dependent on current language."
 msgstr ""
 
-#: .\dj_utils\templatetags\dj_utils.py:221
+#: .\dj_utils\tools.py:104
 msgid "k."
 msgstr ""
 
-#: .\dj_utils\templatetags\dj_utils.py:222
+#: .\dj_utils\tools.py:105
 msgid " mln."
 msgstr ""
 
-#: .\dj_utils\templatetags\dj_utils.py:223
+#: .\dj_utils\tools.py:106
 msgid " bln."
 msgstr ""
 

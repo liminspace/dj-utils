@@ -28,8 +28,8 @@ register = template.Library()
 #
 #
 # <form id="my-form">
-#   {{ form.name|hide_field }}
-#   {% for field in form|get_translation_fields:'name' %}
+#   {{ form.name|hide_mt_field }}
+#   {% for field in form|get_mt_fields:'name' %}
 #     <div class="form-group" {{ field.data_attrs }}>
 #       <label class="control-label" for="{{ field.auto_id }}">
 #         {{ field.label }}:
