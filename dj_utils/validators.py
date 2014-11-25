@@ -15,7 +15,7 @@ def validate_email_domain(email):
         pass
     else:
         if domain.lower() in u_settings.EMAIL_DOMAIN_BLACK_LIST:
-            raise ValidationError(_(u'Email з доменом %s заборонений.') % domain)
+            raise ValidationError(_(u'Email with domain "%s" is disallowed.') % domain)
 
 
 validate_email_endpoint = RegexValidator(  # Валідація мейлу на наявність крапки вкінці.

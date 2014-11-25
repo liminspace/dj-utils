@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-24 23:42+0200\n"
+"POT-Creation-Date: 2014-11-25 13:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,23 +20,23 @@ msgstr ""
 
 #: .\dj_utils\fields\email.py:8
 msgid "EmailField that stores NULL but returns empty string"
-msgstr ""
+msgstr "EmailField который сохраняет NULL но возвращает пустую строку"
 
 #: .\dj_utils\fields\json.py:12
 msgid "Enter valid JSON."
-msgstr ""
+msgstr "Введите правильный JSON."
 
 #: .\dj_utils\fields\json.py:43
 msgid "JSON can't represent timezone-aware times."
-msgstr ""
+msgstr "JSON не может предоставить timezone-aware время."
 
 #: .\dj_utils\fields\json.py:113
 msgid "JSON data"
-msgstr ""
+msgstr "Данные в формате JSON"
 
 #: .\dj_utils\fields\phone.py:24
 msgid "Phone number"
-msgstr ""
+msgstr "Номер телефона"
 
 #: .\dj_utils\forms\modeltranslation.py:26
 #: .\dj_utils\forms\modeltranslation.py:65
@@ -47,29 +46,29 @@ msgstr ""
 #: .\dj_utils\forms\modeltranslation.py:27
 #: .\dj_utils\forms\modeltranslation.py:66
 msgid "This field dependent on current language."
-msgstr ""
+msgstr "Это поле зависит от текущего языка."
 
 #: .\dj_utils\templatetags\dj_utils.py:221
 msgid "k."
-msgstr ""
+msgstr " тыс."
 
 #: .\dj_utils\templatetags\dj_utils.py:222
 msgid " mln."
-msgstr ""
+msgstr " млн."
 
 #: .\dj_utils\templatetags\dj_utils.py:223
 msgid " bln."
-msgstr ""
+msgstr " млрд."
 
 #: .\dj_utils\validators.py:18
 #, python-format
-msgid "Email з доменом %s заборонений."
-msgstr ""
+msgid "Email with domain \"%s\" is disallowed."
+msgstr "Email с доменом %s запрещен."
 
 #: .\dj_utils\validators.py:23
 msgid "Enter a valid email address."
-msgstr ""
+msgstr "Введите правильный email."
 
 #: .\dj_utils\validators.py:31
 msgid "Phone number must be in +XX XXX XXXXXXX format."
-msgstr ""
+msgstr "Номер телефона должен быть в формате +XX XXX XXXXXXX"
