@@ -3,7 +3,7 @@
     <ul class="pagination">
         {% if page.has_previous %}
             <li>
-                <a href="?{{ param_name }}={{ page.previous_page_number }}&{% getvars_without param_name %}"
+                <a href="?{{ param_name }}={{ page.previous_page_number }}&{% url_getvars_without param_name %}"
                    rel="prev">&laquo;</a>
             </li>
         {% else %}
@@ -14,7 +14,7 @@
         {% for p in pages %}
             {% if p == page.number %}
                 <li class="active">
-                    <a href="?{{ param_name }}={{ p }}&{% getvars_without param_name %}">{{ p }}</a>
+                    <a href="?{{ param_name }}={{ p }}&{% url_getvars_without param_name %}">{{ p }}</a>
                 </li>
             {% else %}
                 {% if p == separator %}
@@ -23,14 +23,14 @@
                     </li>
                 {% else %}
                     <li>
-                        <a href="?{{ param_name }}={{ p }}&{% getvars_without param_name %}">{{ p }}</a>
+                        <a href="?{{ param_name }}={{ p }}&{% url_getvars_without param_name %}">{{ p }}</a>
                     </li>
                 {% endif %}
             {% endif %}
         {% endfor %}
         {% if page.has_next %}
             <li>
-                <a href="?{{ param_name }}={{ page.next_page_number }}&{% getvars_without param_name %}"
+                <a href="?{{ param_name }}={{ page.next_page_number }}&{% url_getvars_without param_name %}"
                    rel="next">&raquo;</a>
             </li>
         {% else %}
