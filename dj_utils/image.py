@@ -1,14 +1,15 @@
 # coding=utf-8
 from __future__ import absolute_import
-import StringIO
-from PIL import Image
+from StringIO import StringIO
 import imghdr
-from dj_utils.upload import truncate_uploaded_file
+from PIL import Image
+from django.core.files.uploadedfile import UploadedFile
+from dj_utils.file import truncate_file
 
 
 def image_get_format(f):
     """
-    Визначає формат зображення з файлу f.
+    Визначає формат зображення.
     Повертає:
         'rgb'  - SGI ImgLib Files
         'gif'  - GIF 87a and 89a Files
@@ -21,100 +22,130 @@ def image_get_format(f):
         'jpeg' - JPEG data in JFIF or Exif formats
         'bmp'  - BMP files
         'png'  - Portable Network Graphics
+    Приклад:
+        if image_get_format(request.FILES['image']) == 'jpeg':
+            print 'Image is JPEG'
+
+        if image_get_format(open('/tmp/image.png', 'rb')) == 'png':
+            print 'File is PNG'
     """
     f.seek(0)
-    return imghdr.what(f)
+    return imghdr.what(f).lower()
 
 
 def is_image(f, types=('png', 'jpeg', 'gif')):
     """
-    Перевіряє, чи файл зображення і встановлює йому вірний тип.
+    Повертає True, якщо файл є зображенням (типу types) і встановлює йому вірний тип.
+    Приклад:
+        if is_image(request.FILES['file']):
+            print 'File is image'
+
+        if is_image(open('/tmp/image.jpeg', 'rb')):
+            print 'File is image'
     """
+    assert isinstance(types, (list, tuple))
     t = image_get_format(f)
-    if t in types:
+    if t not in types:
+        return False
+    if isinstance(f, UploadedFile):
         f.content_type = 'image/%s' % t
-        return True
-    return False
+    return True
 
 
 def image_sizelimit(f, max_size=(800, 800), quality=90):
     """
-    Зменшує зображення, якщо воно надто велике
+    Зменшує зображення, якщо воно більше, ніж max_size.
+    Тип файлу не змінюється.
+    Якщо файл JPEG, тоді буде збереження в якості quality.
+    Повертає True, якщо файл змінився.
+    Приклад:
+        image_sizelimit(request.FILES['img_1000x500'], max_size=(600, 600))  # на виході буде 600 x 300
+        image_sizelimit(request.FILES['img_500x1000'], max_size=(600, 600))  # на виході буде 300 x 600
+        image_sizelimit(request.FILES['img_300x400'], max_size=(600, 600))  # на виході буде 300 x 400
+
+        with open('/tmp/img_800x900.png', 'rb+') as f:
+            image_sizelimit(f, max_size=(600, 600))  # на виході буде 533 x 600
     """
+    assert isinstance(max_size, (list, tuple)) and len(max_size) == 2
+    assert 0 < quality <= 100
     f.seek(0)
     img = Image.open(f)
-    cf = img.format
-    x, y = max_size
-    if img.size[0] > x or img.size[1] > y:
-        if img.size[0] > x:
-            y = max(x * img.size[1] / img.size[0], 1)
-        if img.size[1] > y:
-            x = max(y * img.size[0] / img.size[1], 1)
-        t = img.resize((x, y), Image.ANTIALIAS)
-        del img
-        truncate_uploaded_file(f)
-        if cf == 'JPEG':
-            t.save(f.file, cf, quality=quality)
-        else:
-            t.save(f.file, cf)
-        del t
-        f.file.seek(0, 2)
-        f.size = f.file.tell()
-    return cf.lower()
+    max_width, max_height = max_size
+    img_width, img_height = img.size
+    if img_width < max_width and img_height < max_height:
+        return False
+    if img_width > max_width:
+        max_height = max(max_width * img_height / img_width, 1)
+    if img_height > max_height:
+        max_width = max(max_height * img_width / img_height, 1)
+    new_img = img.resize((max_width, max_height), Image.ANTIALIAS)
+    del img
+    truncate_file(f)
+    if img.format.lower() == 'jpeg':
+        new_img.save(f, img.format, quality=quality)
+    else:
+        new_img.save(f, img.format)
+    del new_img
+    if isinstance(f, UploadedFile):
+        f.seek(0, 2)
+        f.size = f.tell()
+    return True
 
 
-def image_convert_to_jpeg(f, quality=90):
+def image_convert_type(f, new_format='jpeg', quality=90, force=False):
+    """
+    Конвертує зображення в new_format (jpeg, png, gif) і встановлює йому вірний тип.
+    Для jpeg використовується якість quality.
+    Якщо force=True, тоді файл буде перезберігатись навіть тоді, коли він вже є необхідного типу.
+    Повертає True, якщо файл змінився.
+    Приклад:
+        image_convert_type(request.FILES['image'], new_format='jpeg', quality=95)
+
+        with open('/tmp/img.png', 'rb+') as f:
+            image_convert_type(f, new_format='jpeg', quality=95)
+    """
+    assert new_format in ('jpeg', 'png', 'gif')
+    assert 0 < quality <= 100
+    current_format = image_get_format(f)
+    if new_format == current_format and not force:
+        return False
     f.seek(0)
     img = Image.open(f)
     if img.mode != 'RGB':
         img = img.convert('RGB')
     img.load()  # need read file!
-    truncate_uploaded_file(f)
-    img.save(f.file, 'JPEG', quality=quality)
+    truncate_file(f)
+    if new_format == 'jpeg':
+        img.save(f, new_format, quality=quality)
+    else:
+        img.save(f, new_format)
     del img
-    f.file.seek(0, 2)
-    f.size = f.file.tell()
-
-
-# def image_get_size(f):
-#     """
-#     Визначає розмір зображення з файлу f.
-#     Повертає:
-#         (width, height)
-#     """
-#     f.seek(0)
-#     img = Image.open(f)
-#     return img.size
-
-
-# def image_convert(f, img_format='jpeg', quality=90):
-#     """
-#     Конвертує файл зображення f в format.
-#     """
-#     assert img_format in ('jpeg', 'png', 'gif')
-#     f.seek(0)
-#     img = Image.open(f)
-#     if img.mode != 'RGB':
-#         img = img.convert('RGB')
-#     img.load()  # need read file!
-#     truncate_uploaded_file(f)
-#     if img_format == 'jpeg':
-#         img.save(f.file, img_format, quality=quality)
-#     else:
-#         img.save(f.file, img_format)
-#     f.file.seek(0, 2)
-#     f.size = f.file.tell()
-#     f.content_type = 'image/%s' % img_format
+    if isinstance(f, UploadedFile):
+        f.seek(0, 2)
+        f.size = f.tell()
+        f.content_type = 'image/%s' % new_format
+    return True
 
 
 def get_thumbnail(f, size=(160, 160), img_format='jpeg', quality=90):
+    """
+    Створює мініатюру зображення з розміром size та типом img_format.
+    Для jpeg використовується якість quality.
+    Повертається файл зображення у вигляді об'єкту StringIO.
+    Приклад:
+        thumb = get_thumbnail(request.FILES['image'], size=(120, 120), quality=80)
+        open('/tmp/thumb.jpeg', 'wb').write(thumb.getvalue())
+
+        thumb = get_thumbnail(open('/tmp/thumb.jpeg', 'rb'), size=(120, 120), quality=80)
+        open('/tmp/thumb.jpeg', 'wb').write(thumb.getvalue())
+    """
     assert isinstance(size, (list, tuple)) and len(size) == 2
     assert img_format in ('jpeg', 'png', 'gif')
     assert 0 < quality <= 100
     f.seek(0)
     img = Image.open(f)
     img.thumbnail(size, Image.ANTIALIAS)
-    t = StringIO.StringIO()
+    t = StringIO()
     if img_format == 'jpeg':
         img.save(t, format=img_format, quality=quality)
     else:

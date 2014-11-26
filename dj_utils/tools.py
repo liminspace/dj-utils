@@ -59,12 +59,6 @@ def dtstr_to_datetime(dtstr):
         return None
 
 
-def makedirs_for_filepath(filepath):
-    dirname = os.path.dirname(filepath)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-
-
 def load_object_by_name(obj_name):
     """
     Імпортує та повертає об'єкт з пакету по назві.

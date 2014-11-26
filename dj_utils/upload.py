@@ -1,11 +1,9 @@
 # coding=utf-8
 from __future__ import absolute_import
-import StringIO
 import os
 import re
 import datetime
 from django.conf import settings
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from dj_utils.tools import datetime_to_dtstr, dtstr_to_datetime
 
 
@@ -23,19 +21,6 @@ def generate_filename(ext, label=None, tmp=True):
         '_' + label if label else '',
         ext
     )
-
-
-def truncate_uploaded_file(uploaded_file):
-    """
-    Очищає завантажений файл і дозволяє в нього записувати свій файл.
-    Не призначено для дуже об'ємних файлів!
-    """
-    if isinstance(uploaded_file, InMemoryUploadedFile):
-        uploaded_file.file = StringIO.StringIO()
-    else:
-        uploaded_file.file.seek(0)
-        uploaded_file.file.truncate(0)
-    uploaded_file.file.seek(0)
 
 
 def url_to_fn(url):
