@@ -74,17 +74,15 @@ def image_sizelimit(f, max_size=(800, 800), quality=90):
     img_width, img_height = img.size
     if img_width < max_width and img_height < max_height:
         return False
-    if img_width > max_width:
-        max_height = max(max_width * img_height / img_width, 1)
-    if img_height > max_height:
-        max_width = max(max_height * img_width / img_height, 1)
-    new_img = img.resize((max_width, max_height), Image.ANTIALIAS)
+    k = min(img_width / float(max_width), img_height / float(max_height))
+    new_img = img.resize((int(round(img_width / k)), int(round(img_height / k))), Image.ANTIALIAS)
+    img_format = img.format.lower()
     del img
     truncate_file(f)
-    if img.format.lower() == 'jpeg':
-        new_img.save(f, img.format, quality=quality)
+    if img_format == 'jpeg':
+        new_img.save(f, img_format, quality=quality)
     else:
-        new_img.save(f, img.format)
+        new_img.save(f, img_format)
     del new_img
     if isinstance(f, UploadedFile):
         f.seek(0, 2)
