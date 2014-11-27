@@ -14,13 +14,13 @@ class QueryCountDebugMiddleware(object):
     Для підключення треба в settings додати:
     ...
     if DEBUG:
-        MIDDLEWARE_CLASSES = ('utils.middleware.QueryCountDebugMiddleware',) + MIDDLEWARE_CLASSES
+        MIDDLEWARE_CLASSES = ('dj_utils.middleware.QueryCountDebugMiddleware',) + MIDDLEWARE_CLASSES
     ...
     LOGGING = {
         ...
         'loggers': {
             ...
-            'utils.middleware': {
+            'dj_utils.middleware': {
                 'handlers': ['console'],
                 'level': 'DEBUG',
             },

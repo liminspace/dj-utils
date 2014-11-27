@@ -69,6 +69,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         subprocess.call([
-            sys.executable, '-m', 'smtpd', '-n', '-c', 'utils.management.commands.debug_email_server.DebuggingServer',
+            sys.executable,
+            '-m', 'smtpd', '-n', '-c', 'dj_utils.management.commands.debug_email_server.DebuggingServer',
             'localhost:1025'
         ])
