@@ -74,7 +74,7 @@ def image_sizelimit(f, max_size=(800, 800), quality=90):
     img_width, img_height = img.size
     if img_width < max_width and img_height < max_height:
         return False
-    k = min(img_width / float(max_width), img_height / float(max_height))
+    k = max(img_width / float(max_width), img_height / float(max_height))
     new_img = img.resize((int(round(img_width / k)), int(round(img_height / k))), Image.ANTIALIAS)
     img_format = img.format.lower()
     del img
