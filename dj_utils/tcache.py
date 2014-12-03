@@ -20,7 +20,7 @@ def cache_set(key, value, timeout=DEFAULT_TIMEOUT, version=None, tags=None, cach
         tags = [tags]
     tag_keys = [CACHE_TAG_KEY % tag for tag in tags]
     if cache.__class__.__name__ == 'RedisCache':
-        from redis_cache.exceptions import ConnectionInterrupted
+        from django_redis.exceptions import ConnectionInterrupted
         try:
             redis_client = cache.client.get_client()
             for tag_key in tag_keys:
@@ -48,7 +48,7 @@ def cache_invalidate_by_tags(tags, cache=None):
         cache = default_cache
     tag_keys_for_delete = []
     if cache.__class__.__name__ == 'RedisCache':
-        from redis_cache.exceptions import ConnectionInterrupted
+        from django_redis.exceptions import ConnectionInterrupted
         try:
             redis_client = cache.client.get_client()
             for tag_key in tag_keys:
