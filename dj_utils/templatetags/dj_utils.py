@@ -235,6 +235,17 @@ def assign(value):
     return value
 
 
+@register.assignment_tag
+def assign_format_str(string, *args, **kwargs):
+    """
+    Форматує стрічку і зберігає її в змінній.
+    Приймає як нумеровані так і названі аргументи.
+    {% assign_format_str 'contacts_{lang}.html' lang=LANGUAGE_CODE as tpl_name %}
+    {% include tpl_name %}
+    """
+    return string.format(*args, **kwargs)
+
+
 @register.filter
 def tojson(value):
     return simplejson.dumps(value)
