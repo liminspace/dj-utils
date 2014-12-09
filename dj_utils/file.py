@@ -22,10 +22,10 @@ def truncate_file(f):
         f.truncate(0)
 
 
-def makedirs_for_filepath(filepath):
+def makedirs_for_filepath(filepath, mode=0o777):
     """
     Створює папки для файлу filepath, якщо ці папки не існують.
     """
     dirname = os.path.dirname(filepath)
     if not os.path.exists(dirname):
-        os.makedirs(dirname)
+        os.makedirs(dirname, mode=mode)
