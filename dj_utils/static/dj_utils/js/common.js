@@ -114,6 +114,13 @@
   };
 
   $(function() {
+    if (typeof jstz !== 'undefined') {
+      if (!$.cookie('utz')) {
+        $.cookie('utz', jstz.determine().name(), {
+          path: '/'
+        });
+      }
+    }
     return $('.click-proxy-a').click(function(e) {
       if (e.target.nodeName !== 'A') {
         return $('a', this).first().click();
