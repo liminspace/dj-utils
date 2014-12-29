@@ -4,6 +4,7 @@ from django import template
 from django.conf import settings
 from django.utils import html
 from django.utils.safestring import mark_safe
+from dj_utils.settings import LANGUAGES_CODES
 
 
 register = template.Library()
@@ -45,14 +46,14 @@ register = template.Library()
 @register.filter
 def get_mt_fields(value, arg):
     base_field, n = value[arg], 0
-    for lang in settings.LANGUAGES:
+    for lang in LANGUAGES_CODES:
         try:
-            field = value['%s_%s' % (arg, lang[0])]
+            field = value['%s_%s' % (arg, lang)]
             field.data_attrs = mark_safe(
                 'data-lang="%(lang)s" data-lang-default="%(default)s" '
                 'data-lang-copy-to-id="%(cti)s" data-lang-copy-from-id="%(cfi)s"' % {
-                    'lang': lang[0],
-                    'default': int(lang[0] == settings.LANGUAGE_CODE),
+                    'lang': lang,
+                    'default': int(lang == settings.LANGUAGE_CODE),
                     'cti': base_field.auto_id,
                     'cfi': field.auto_id,
                 }
@@ -62,7 +63,7 @@ def get_mt_fields(value, arg):
             n += 1
         if field is not None:
             yield field
-    if n == len(settings.LANGUAGES):
+    if n == len(LANGUAGES_CODES):
         yield base_field
 
 

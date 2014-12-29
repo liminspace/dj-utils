@@ -5,6 +5,7 @@ import os
 import urllib
 import urlparse
 import simplejson
+from django.utils import translation
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.core.servers.basehttp import FileWrapper
@@ -86,3 +87,23 @@ def full_url(path=None, secure=None):
     if secure is None:
         secure = u_settings.USE_HTTPS
     return '%s://%s%s' % ((secure and 'https' or 'http'), u_settings.SITE_DOMAIN, path or '')
+
+
+def get_urls_for_langs(request):
+    """
+    Повертає словник з посиланням на дану сторінку для різних мов.
+    {'en': '/about-us', 'uk': '/ua/pro-nas'}
+    """
+    urls = {}
+    current_lang = translation.get_language()
+    r = request.resolver_match
+    for lang in u_settings.LANGUAGES_CODES:
+        if lang != current_lang:
+            translation.activate(lang)
+            kwargs = r.kwargs.copy()
+            kwargs['params_'] = request.GET
+            urls[lang] = resolve_url_ext(r.view_name, *r.args, **kwargs)
+        else:
+            urls[lang] = request.get_full_path()
+    translation.activate(current_lang)
+    return urls

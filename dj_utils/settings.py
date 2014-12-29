@@ -35,3 +35,5 @@ EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)
 EMAIL_DEFAULT_CONTEXT = getattr(settings, 'EMAIL_DEFAULT_CONTEXT', 'dj_utils.context_processors.email_default')
 
 LOG_DIR = getattr(settings, 'LOG_DIR', os.path.join(settings.BASE_DIR, 'logs'))
+
+LANGUAGES_CODES = tuple(t[0] for t in settings.LANGUAGES)

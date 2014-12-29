@@ -10,7 +10,7 @@ from django.core.cache.utils import make_template_fragment_key
 from django.core.cache import cache
 from dj_utils import gravatar
 from dj_utils.tcache import cache_set
-from dj_utils.http import full_url
+from dj_utils.http import full_url, get_urls_for_langs
 from dj_utils.tools import long_number_readable
 
 
@@ -456,3 +456,14 @@ def url_getvars_without(context, token):
 @register.simple_tag
 def full_url_prefix(secure=None):
     return mark_safe(full_url(secure=secure))
+
+
+@register.assignment_tag(takes_context=True, name='get_urls_for_langs')
+def get_urls_for_langs_(context):
+    """
+    Повертає словник з посиланням на дану сторінку для різних мов.
+    В контексті має бути request.
+    {% get_urls_for_langs as urls %}
+    {'en': '/about-us', 'uk': '/ua/pro-nas'}
+    """
+    return get_urls_for_langs(context['request'])
