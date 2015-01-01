@@ -95,7 +95,8 @@ class RenderMailSender(object):
                 self._context_instance = Context(
                     import_by_path(u_settings.EMAIL_DEFAULT_CONTEXT)() if u_settings.EMAIL_DEFAULT_CONTEXT else None
                 )
-            self._context_instance.update(self._context)
+            if self._context:
+                self._context_instance.update(self._context)
 
     def _render_template_block(self, name, nodes=None, extended_blocks=None):
         if nodes is None:
