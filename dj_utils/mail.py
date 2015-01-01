@@ -157,8 +157,8 @@ class RenderMailSender(object):
     def send(self, to):
         if not isinstance(to, (list, tuple)):
             to = (to,)
-        self._create_context_instance()
         self._set_locale()
+        self._create_context_instance()
         try:
             self._load_tpl()
             attach_alternative = tuple(self._attach_alternative) if self._attach_alternative else ()
