@@ -75,7 +75,7 @@ def image_sizelimit(f, max_size=(800, 800), quality=90):
     if img_width < max_width and img_height < max_height:
         return False
     k = max(img_width / float(max_width), img_height / float(max_height))
-    new_img = img.resize((int(round(img_width / k)), int(round(img_height / k))), Image.ANTIALIAS)
+    new_img = img.resize((int(round(img_width / k)), int(round(img_height / k))), Image.LANCZOS)
     img_format = img.format.lower()
     del img
     truncate_file(f)
@@ -142,7 +142,7 @@ def get_thumbnail(f, size=(160, 160), img_format='jpeg', quality=90):
     assert 0 < quality <= 100
     f.seek(0)
     img = Image.open(f)
-    img.thumbnail(size, Image.ANTIALIAS)
+    img.thumbnail(size, Image.BICUBIC)
     t = StringIO()
     if img_format == 'jpeg':
         img.save(t, format=img_format, quality=quality)

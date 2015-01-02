@@ -1,5 +1,5 @@
 Django==1.7.1
-Pillow==2.6.1
+Pillow==2.7.0
 django-localeurl==2.0.1
 django-modeltranslation==0.8
 django-redis==3.8.0
