@@ -89,6 +89,24 @@ def full_url(path=None, secure=None):
     return '%s://%s%s' % ((secure and 'https' or 'http'), u_settings.SITE_DOMAIN, path or '')
 
 
+def get_url_for_lang(request, lang):
+    """
+    Повертає посиланням на сторінку з request для мови lang.
+    """
+    assert lang in u_settings.LANGUAGES_CODES
+    current_lang = translation.get_language()
+    if lang != current_lang:
+        r = request.resolver_match
+        translation.activate(lang)
+        kwargs = r.kwargs.copy()
+        kwargs['params_'] = request.GET
+        url = resolve_url_ext(r.view_name, *r.args, **kwargs)
+        translation.activate(current_lang)
+    else:
+        url = request.get_full_path()
+    return url
+
+
 def get_urls_for_langs(request):
     """
     Повертає словник з посиланням на дану сторінку для різних мов.
