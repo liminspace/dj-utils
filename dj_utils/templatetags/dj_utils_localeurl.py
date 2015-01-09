@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from django import template
 from django.conf import settings
-from dj_utils.localeurl_tools import get_current_page_urls
+from dj_utils.http import get_urls_for_langs
 
 
 register = template.Library()
@@ -18,7 +18,7 @@ def meta_locale_links(context):
         <link rel="alternate" hreflang="en" href="http://example.com/en/">
     *using django-localeurl
     """
-    langs_urls = get_current_page_urls(context['request'])
+    langs_urls = get_urls_for_langs(context['request'])
     return {
         'default_url': langs_urls[settings.LANGUAGE_CODE],
         'langs_urls': langs_urls,
