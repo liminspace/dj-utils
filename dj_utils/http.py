@@ -9,6 +9,7 @@ from django.utils import translation
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.core.servers.basehttp import FileWrapper
+from django.core.urlresolvers import resolve
 from dj_utils import settings as u_settings
 
 
@@ -97,6 +98,8 @@ def get_url_for_lang(request, lang):
     current_lang = translation.get_language()
     if lang != current_lang:
         r = request.resolver_match
+        if r is None:
+            r = resolve(request.path)
         translation.activate(lang)
         kwargs = r.kwargs.copy()
         kwargs['params_'] = request.GET
