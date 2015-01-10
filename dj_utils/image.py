@@ -30,7 +30,10 @@ def image_get_format(f):
             print 'File is PNG'
     """
     f.seek(0)
-    return imghdr.what(f).lower()
+    t = imghdr.what(f)
+    if isinstance(t, basestring):
+        t = t.lower()
+    return t
 
 
 def is_image(f, types=('png', 'jpeg', 'gif')):
