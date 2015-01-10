@@ -19,6 +19,8 @@ def meta_locale_links(context):
     *using django-localeurl
     """
     langs_urls = get_urls_for_langs(context['request'])
+    if langs_urls is None:
+        return {}
     return {
         'default_url': langs_urls[settings.LANGUAGE_CODE],
         'langs_urls': langs_urls,

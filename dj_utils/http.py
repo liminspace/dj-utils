@@ -114,10 +114,13 @@ def get_urls_for_langs(request):
     """
     Повертає словник з посиланням на дану сторінку для різних мов.
     {'en': '/about-us', 'uk': '/ua/pro-nas'}
+    Повертає None, якщо в request немає resolver_match (тобто помилка на етапі process_request)
     """
     urls = {}
     current_lang = translation.get_language()
     r = request.resolver_match
+    if r is None:
+        return None
     for lang in u_settings.LANGUAGES_CODES:
         if lang != current_lang:
             translation.activate(lang)
