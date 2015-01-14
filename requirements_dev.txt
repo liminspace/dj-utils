@@ -1,4 +1,4 @@
-Django==1.7.2
+Django==1.7.3
 Pillow==2.7.0
 django-localeurl==2.0.1
 django-modeltranslation==0.8
