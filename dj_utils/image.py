@@ -36,9 +36,9 @@ def image_get_format(f):
     return t
 
 
-def is_image(f, types=('png', 'jpeg', 'gif')):
+def is_image(f, types=('png', 'jpeg', 'gif'), set_content_type=True):
     """
-    Повертає True, якщо файл є зображенням (типу types) і встановлює йому вірний тип.
+    Повертає True, якщо файл є зображенням (типу types) і встановлює йому вірний content_type.
     Приклад:
         if is_image(request.FILES['file']):
             print 'File is image'
@@ -47,88 +47,90 @@ def is_image(f, types=('png', 'jpeg', 'gif')):
             print 'File is image'
     """
     assert isinstance(types, (list, tuple))
+    types = [t.lower() for t in types]
     t = image_get_format(f)
     if t not in types:
         return False
-    if isinstance(f, UploadedFile):
+    if isinstance(f, UploadedFile) and set_content_type:
         f.content_type = 'image/%s' % t
     return True
 
 
-def image_sizelimit(f, max_size=(800, 800), quality=90):
+def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
+                 return_new_image=False):
     """
-    Зменшує зображення, якщо воно більше, ніж max_size.
-    Тип файлу не змінюється.
-    Якщо файл JPEG, тоді буде збереження в якості quality.
-    Повертає True, якщо файл змінився.
-    Приклад:
-        image_sizelimit(request.FILES['img_1000x500'], max_size=(600, 600))  # на виході буде 600 x 300
-        image_sizelimit(request.FILES['img_500x1000'], max_size=(600, 600))  # на виході буде 300 x 600
-        image_sizelimit(request.FILES['img_300x400'], max_size=(600, 600))  # на виході буде 300 x 400
-
-        with open('/tmp/img_800x900.png', 'rb+') as f:
-            image_sizelimit(f, max_size=(600, 600))  # на виході буде 533 x 600
+    Підганяє зображення під параметри.
+    max_size - максимальний розмір картинки. один з розмірів може бути None (авто)
+    new_format - формат файлу (jpeg, png, gif). якщо None, тоді буде використаний формат оригіналу
+    jpeg_quality - якість JPEG
+    fill - чи зображення має бути заповненим при обрізці (інакше буде вписане)
+    stretch - чи розтягувати, якщо картинка замаленька
+    return_new_image - якщо True, тоді буде повертатись новий об'єкт StringIO картинки. Інакше bool, чи файл змінювався.
     """
     assert isinstance(max_size, (list, tuple)) and len(max_size) == 2
-    assert 0 < quality <= 100
+    assert 0 < jpeg_quality <= 100
+    if new_format:
+        new_format = new_format.lower()
+        assert new_format in ('jpeg', 'png', 'gif')
     f.seek(0)
     img = Image.open(f)
     max_width, max_height = max_size
     img_width, img_height = img.size
-    if img_width < max_width and img_height < max_height:
-        return False
-    k = max(img_width / float(max_width), img_height / float(max_height))
-    new_img = img.resize((int(round(img_width / k)), int(round(img_height / k))), Image.LANCZOS)
     img_format = img.format.lower()
-    del img
-    truncate_file(f)
-    if img_format == 'jpeg':
-        new_img.save(f, img_format, quality=quality)
-    else:
-        new_img.save(f, img_format)
-    del new_img
-    if isinstance(f, UploadedFile):
-        f.seek(0, 2)
-        f.size = f.tell()
-    return True
+    ch_size = ch_format = False
+    if max_width is None:
+        max_width = int(round((img_width / float(img_height)) * max_height))
+    elif max_height is None:
+        max_height = int(round((img_height / float(img_width)) * max_width))
+    if (img_width, img_height) != (max_width, max_height):
+        tasks = []
+        if fill:
+            if (img_width < max_width or img_height < max_height) and not stretch:
+                k = max(max_width / float(img_width), max_height / float(img_height))
+                w, h = int(round(max_width / k)), int(round(max_height / k))
+                left, top = int(round((img_width - w) / 2.)), int(round((img_height - h) / 2.))
+                tasks.append(('crop', ((left, top, left + w, top + h),), {}))
+            else:
+                k = min(img_width / float(max_width), img_height / float(max_height))
+                w, h = int(round(img_width / k)), int(round(img_height / k))
+                tasks.append(('resize', ((w, h), Image.LANCZOS), {}))
+                left, top = int(round((w - max_width) / 2.)), int(round((h - max_height) / 2.))
+                tasks.append(('crop', ((left, top, left + max_width, top + max_height),), {}))
+        elif ((img_width > max_width or img_height > max_height) or
+                (img_width < max_width and img_height < max_height and stretch)):
+            k = max(img_width / float(max_width), img_height / float(max_height))
+            w, h = int(round(img_width / k)), int(round(img_height / k))
+            tasks.append(('resize', ((w, h), Image.LANCZOS), {}))
+        for img_method, method_args, method_kwargs in tasks:
+            if ((img_method == 'resize' and method_args[0] == (img_width, img_height)) or
+                    (img_method == 'crop' and method_args[0] == (0, 0, img.size[0], img.size[1]))):
+                continue
+            img = getattr(img, img_method)(*method_args, **method_kwargs)
+            ch_size = True
+    if new_format and new_format != img_format:
+        ch_format = True
+        img_format = new_format
+    if return_new_image:
+        f = StringIO()
+        img.save(f, img_format, jpeg_quality=jpeg_quality)
+        return f
+    if ch_size or ch_format:
+        img.load()
+        truncate_file(f)
+        img.save(f, img_format, jpeg_quality=jpeg_quality)
+        if isinstance(f, UploadedFile):
+            f.seek(0, 2)
+            f.size = f.tell()
+            f.content_type = 'image/%s' % new_format
+    return ch_size or ch_format
 
 
-def image_convert_type(f, new_format='jpeg', quality=90, force=False):
-    """
-    Конвертує зображення в new_format (jpeg, png, gif) і встановлює йому вірний тип.
-    Для jpeg використовується якість quality.
-    Якщо force=True, тоді файл буде перезберігатись навіть тоді, коли він вже є необхідного типу.
-    Повертає True, якщо файл змінився.
-    Приклад:
-        image_convert_type(request.FILES['image'], new_format='jpeg', quality=95)
-
-        with open('/tmp/img.png', 'rb+') as f:
-            image_convert_type(f, new_format='jpeg', quality=95)
-    """
-    assert new_format in ('jpeg', 'png', 'gif')
-    assert 0 < quality <= 100
-    current_format = image_get_format(f)
-    if new_format == current_format and not force:
-        return False
-    f.seek(0)
-    img = Image.open(f)
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    img.load()  # need read file!
-    truncate_file(f)
-    if new_format == 'jpeg':
-        img.save(f, new_format, quality=quality)
-    else:
-        img.save(f, new_format)
-    del img
-    if isinstance(f, UploadedFile):
-        f.seek(0, 2)
-        f.size = f.tell()
-        f.content_type = 'image/%s' % new_format
-    return True
+def get_thumbnail(f, size=(200, 200), new_format=None, jpeg_quality=85, fill=True, stretch=True):
+    return adjust_image(f, max_size=size, new_format=new_format, jpeg_quality=jpeg_quality, fill=fill, stretch=stretch,
+                        return_new_image=True)
 
 
-def get_thumbnail(f, size=(160, 160), img_format='jpeg', quality=90):
+def get_thumbnail_old(f, size=(200, 200), new_format='jpeg', jpeg_quality=85):
     """
     Створює мініатюру зображення з розміром size та типом img_format.
     Для jpeg використовується якість quality.
@@ -141,14 +143,11 @@ def get_thumbnail(f, size=(160, 160), img_format='jpeg', quality=90):
         open('/tmp/thumb.jpeg', 'wb').write(thumb.getvalue())
     """
     assert isinstance(size, (list, tuple)) and len(size) == 2
-    assert img_format in ('jpeg', 'png', 'gif')
-    assert 0 < quality <= 100
+    assert new_format in ('jpeg', 'png', 'gif')
+    assert 0 < jpeg_quality <= 100
     f.seek(0)
     img = Image.open(f)
     img.thumbnail(size, Image.BICUBIC)
     t = StringIO()
-    if img_format == 'jpeg':
-        img.save(t, format=img_format, quality=quality)
-    else:
-        img.save(t, format=img_format)
+    img.save(t, format=new_format, quality=jpeg_quality)
     return t
