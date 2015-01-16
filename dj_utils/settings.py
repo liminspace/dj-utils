@@ -9,7 +9,7 @@ USE_HTTPS = getattr(settings, 'USE_HTTPS', False)
 UTILS_EMAIL_DEBUG_IN_CONSOLE = getattr(settings, 'UTILS_EMAIL_DEBUG_IN_CONSOLE', True)
 UTILS_EMAIL_DEBUG_IN_FILES = getattr(settings, 'UTILS_EMAIL_DEBUG_IN_FILES', True)
 UTILS_EMAIL_DEBUG_PATH = getattr(settings, 'UTILS_EMAIL_DEBUG_PATH',
-                                 os.path.join(settings.BASE_DIR, 'tmp', 'debug_email'))
+                                 os.path.join(settings.BASE_DIR, 'tmp', 'debug_email').replace('\\', '/'))
 
 GRAVATAR_DEFAULT_SIZE = getattr(settings, 'GRAVATAR_DEFAULT_SIZE', 50)
 # 404, mm, identicon, monsterid, wavatar, retro, blank, http://mysite.com/default.jpg
@@ -34,6 +34,6 @@ EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)
 
 EMAIL_DEFAULT_CONTEXT = getattr(settings, 'EMAIL_DEFAULT_CONTEXT', 'dj_utils.context_processors.email_default')
 
-LOG_DIR = getattr(settings, 'LOG_DIR', os.path.join(settings.BASE_DIR, 'logs'))
+LOG_DIR = getattr(settings, 'LOG_DIR', os.path.join(settings.BASE_DIR, 'logs').replace('\\', '/'))
 
 LANGUAGES_CODES = tuple(t[0] for t in settings.LANGUAGES)

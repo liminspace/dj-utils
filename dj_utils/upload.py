@@ -57,7 +57,7 @@ def url_to_fn(url):
     """
     if url.startswith(settings.MEDIA_URL):
         url = url[len(settings.MEDIA_URL):]
-    fn = os.path.join(settings.MEDIA_ROOT, os.path.normpath(url))
+    fn = os.path.join(settings.MEDIA_ROOT, os.path.normpath(url)).replace('\\', '/')
     return fn
 
 
@@ -94,7 +94,7 @@ def remove_old_tmp_files(subdirs, max_lifetime=(7 * 24), tmp_prefix=TMP_PREFIX):
     > remove_old_tmp_files(['images'], (4 * 24))
     """
     for subdir in subdirs:
-        path = os.path.join(settings.MEDIA_ROOT, subdir)
+        path = os.path.join(settings.MEDIA_ROOT, subdir).replace('\\', '/')
         old_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=max_lifetime)
         r = re.compile(r"^(%s)([a-z0-9_\-]+?)((?:_.+?)?)(\.[a-z]{3,4})$" % tmp_prefix, re.I)
         for fn in os.listdir(path):
@@ -103,4 +103,4 @@ def remove_old_tmp_files(subdirs, max_lifetime=(7 * 24), tmp_prefix=TMP_PREFIX):
                 prefix, name, label, ext = m.groups()
                 fdt = dtstr_to_datetime(name)
                 if fdt and old_dt > fdt:
-                    os.remove(os.path.join(path, fn))
+                    os.remove(os.path.join(path, fn).replace('\\', '/'))

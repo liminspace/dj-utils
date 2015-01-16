@@ -21,7 +21,7 @@ class Command(BaseCommand):
                 path = os.path.abspath(project_apps.app_configs[app].path)
             if not path.startswith(settings.BASE_DIR):
                 continue
-            if not os.path.exists(os.path.join(path, 'locale')):
+            if not os.path.exists(os.path.join(path, 'locale').replace('\\', '/')):
                 continue
             result.append(path)
         if not result:
@@ -31,6 +31,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for path in self._get_paths_of_apps():
             os.chdir(path)
-            command = [sys.executable, os.path.join(settings.BASE_DIR, 'manage.py'), 'compilemessages']
+            command = [sys.executable,
+                       os.path.join(settings.BASE_DIR, 'manage.py').replace('\\', '/'),
+                       'compilemessages']
             self.stdout.write('[%s] %s' % (path, ' '.join(command)))
             subprocess.call(command)

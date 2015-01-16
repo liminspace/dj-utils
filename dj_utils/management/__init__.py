@@ -20,7 +20,7 @@ class LoggingBaseCommand(BaseCommand):
             msg = u'[%s] %s' % (datetime.datetime.now().strftime(u'%d.%m.%Y %H:%M:%S'), msg)
         if stdout:
             self.stdout.write(msg, ending=ending)
-        with open(os.path.join(self.log_dir, self.get_log_fn()), 'a') as f:
+        with open(os.path.join(self.log_dir, self.get_log_fn()).replace('\\', '/'), 'a') as f:
             f_ending = '\n' if ending is None else ending
             if f_ending and not msg.endswith(f_ending):
                 msg += f_ending

@@ -30,9 +30,9 @@ class DebuggingServer(SMTPServer):
     @staticmethod
     def _get_fn(fn_base, n=None):
         if n is None:
-            return os.path.join(UTILS_EMAIL_DEBUG_PATH, '%s.eml' % fn_base)
+            return os.path.join(UTILS_EMAIL_DEBUG_PATH, '{}.eml'.format(fn_base)).replace('\\', '/')
         else:
-            return os.path.join(UTILS_EMAIL_DEBUG_PATH, '%s_%d.eml' % (fn_base, n))
+            return os.path.join(UTILS_EMAIL_DEBUG_PATH, '{}_{}.eml'.format(fn_base, n)).replace('\\', '/')
 
     def process_message(self, peer, mailfrom, rcpttos, data):
         try:

@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 if apps:
                     raise CommandError('App "%s" is not in project path.' % app)
                 continue
-            if not os.path.exists(os.path.join(path, 'locale')):
+            if not os.path.exists(os.path.join(path, 'locale').replace('\\', '/')):
                 self.stdout.write('App "%s" ignore because locale path not found.' % app)
                 continue
             result.append(path)
@@ -52,7 +52,7 @@ class Command(BaseCommand):
         for app in project_apps.app_configs.values():
             if not app.path.startswith(settings.BASE_DIR):
                 continue
-            if not os.path.exists(os.path.join(app.path, 'locale')):
+            if not os.path.exists(os.path.join(app.path, 'locale').replace('\\', '/')):
                 continue
             apps.append(app.label)
         return apps
@@ -60,7 +60,7 @@ class Command(BaseCommand):
     @staticmethod
     def _make_locale_dirs(path):
         for lang_code, lang_name in settings.LANGUAGES:
-            dn = os.path.join(path, 'locale', lang_code, 'LC_MESSAGES')
+            dn = os.path.join(path, 'locale', lang_code, 'LC_MESSAGES').replace('\\', '/')
             try:
                 os.makedirs(dn, 0775)
             except OSError, e:
@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         paths = self._get_paths_of_apps(options['apps'])
-        command_base = [sys.executable, os.path.join(settings.BASE_DIR, 'manage.py'), 'makemessages']
+        command_base = [sys.executable, os.path.join(settings.BASE_DIR, 'manage.py').replace('\\', '/'), 'makemessages']
         if options['locale']:
             for lang in options['locale']:
                 command_base.extend(['-l', lang])

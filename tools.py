@@ -35,7 +35,7 @@ class MakemessagesCommand(DjangoMakemessagesCommand):
     default_locale_path = None
 
     def _update_locale_paths(self, app_name):
-        self.locale_paths = [os.path.join(app_name, 'locale')]
+        self.locale_paths = [os.path.join(app_name, 'locale').replace('\\', '/')]
         self.default_locale_path = self.locale_paths[0]
         if not os.path.exists(self.default_locale_path):
             os.makedirs(self.default_locale_path)
@@ -58,10 +58,10 @@ class CompilemessagesCommand(DjangoCompilemessagesCommand):
     @classmethod
     def compilemessages(cls):
         check_programs('msgfmt')
-        basedirs = [os.path.join(app, 'locale') for app in APPS]
+        basedirs = [os.path.join(app, 'locale').replace('\\', '/') for app in APPS]
         co = cls()
         for basedir in basedirs:
-            dirs = [os.path.join(basedir, locale, 'LC_MESSAGES') for locale in LANGUAGES]
+            dirs = [os.path.join(basedir, locale, 'LC_MESSAGES').replace('\\', '/') for locale in LANGUAGES]
             locations = []
             for ldir in dirs:
                 for dirpath, dirnames, filenames in os.walk(ldir):

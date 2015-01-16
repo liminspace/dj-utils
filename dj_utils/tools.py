@@ -106,7 +106,7 @@ def long_number_readable(value):
 
 
 def log_to_file(msg, double_br=False, add_time=True, fn=None):
-    fn = fn or os.path.join(settings.LOG_DIR, 'log.log')
+    fn = fn or os.path.join(settings.LOG_DIR, 'log.log').replace('\\', '/')
     with open(fn, 'a') as f:
         msg += '\n' * (int(bool(double_br)) + 1)
         if add_time:
@@ -121,4 +121,5 @@ def log_memory_usage(desc='test'):
         raise ImportError("Can't import psutil. Please, install psutil (pip intall psutil).")
     proc = psutil.Process(os.getpid())
     mem = proc.get_memory_info()[0] / float(2 ** 20)
-    log_to_file('%s: %s MB\n' % (desc, mem), add_time=False, fn=os.path.join(u_settings.LOG_DIR, 'memory_usage.log'))
+    log_to_file('%s: %s MB\n' % (desc, mem), add_time=False,
+                fn=os.path.join(u_settings.LOG_DIR, 'memory_usage.log').replace('\\', '/'))
