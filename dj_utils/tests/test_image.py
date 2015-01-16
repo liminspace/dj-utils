@@ -18,7 +18,7 @@ def create_test_image(w, h):
 
 def get_img_file(img, img_format='JPEG', jpeg_quality=100):
     f = StringIO()
-    img.save(f, img_format, jpeg_quality=jpeg_quality)
+    img.save(f, img_format, quality=jpeg_quality)
     return f
 
 

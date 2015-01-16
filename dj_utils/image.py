@@ -80,27 +80,27 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
     img_format = img.format.lower()
     ch_size = ch_format = False
     if max_width is None:
-        max_width = int(round((img_width / float(img_height)) * max_height))
+        max_width = int(((img_width / float(img_height)) * max_height))
     elif max_height is None:
-        max_height = int(round((img_height / float(img_width)) * max_width))
+        max_height = int(((img_height / float(img_width)) * max_width))
     if (img_width, img_height) != (max_width, max_height):
         tasks = []
         if fill:
             if (img_width < max_width or img_height < max_height) and not stretch:
                 k = max(max_width / float(img_width), max_height / float(img_height))
-                w, h = int(round(max_width / k)), int(round(max_height / k))
-                left, top = int(round((img_width - w) / 2.)), int(round((img_height - h) / 2.))
-                tasks.append(('crop', ((left, top, left + w, top + h),), {}))
+                w, h = max_width / k, max_height / k
+                left, top = int((img_width - w) / 2.), int((img_height - h) / 2.)
+                tasks.append(('crop', ((left, top, int(left + w), int(top + h)),), {}))
             else:
                 k = min(img_width / float(max_width), img_height / float(max_height))
-                w, h = int(round(img_width / k)), int(round(img_height / k))
-                tasks.append(('resize', ((w, h), Image.LANCZOS), {}))
-                left, top = int(round((w - max_width) / 2.)), int(round((h - max_height) / 2.))
+                w, h = img_width / k, img_height / k
+                tasks.append(('resize', ((int(w), int(h)), Image.LANCZOS), {}))
+                left, top = int((w - max_width) / 2.), int((h - max_height) / 2.)
                 tasks.append(('crop', ((left, top, left + max_width, top + max_height),), {}))
         elif ((img_width > max_width or img_height > max_height) or
                 (img_width < max_width and img_height < max_height and stretch)):
             k = max(img_width / float(max_width), img_height / float(max_height))
-            w, h = int(round(img_width / k)), int(round(img_height / k))
+            w, h = int(img_width / k), int(img_height / k)
             tasks.append(('resize', ((w, h), Image.LANCZOS), {}))
         for img_method, method_args, method_kwargs in tasks:
             if ((img_method == 'resize' and method_args[0] == (img_width, img_height)) or
@@ -114,43 +114,15 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
     if not ch_format and img_format == 'jpeg' and force_jpeg_save:
         ch_format = True
     if return_new_image:
-        f = StringIO()
-        img.save(f, img_format, jpeg_quality=jpeg_quality)
-        return f
+        t = StringIO()
+        img.save(t, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
+        return t
     if ch_size or ch_format:
         img.load()
         truncate_file(f)
-        img.save(f, img_format, jpeg_quality=jpeg_quality)
+        img.save(f, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
         if isinstance(f, UploadedFile):
             f.seek(0, 2)
             f.size = f.tell()
             f.content_type = 'image/%s' % new_format
     return ch_size or ch_format
-
-
-def get_thumbnail(f, size=(200, 200), new_format=None, jpeg_quality=85, fill=True, stretch=True):
-    return adjust_image(f, max_size=size, new_format=new_format, jpeg_quality=jpeg_quality, fill=fill, stretch=stretch,
-                        return_new_image=True)
-
-
-def get_thumbnail_old(f, size=(200, 200), new_format='jpeg', jpeg_quality=85):
-    """
-    Створює мініатюру зображення з розміром size та типом img_format.
-    Для jpeg використовується якість quality.
-    Повертається файл зображення у вигляді об'єкту StringIO.
-    Приклад:
-        thumb = get_thumbnail(request.FILES['image'], size=(120, 120), quality=80)
-        open('/tmp/thumb.jpeg', 'wb').write(thumb.getvalue())
-
-        thumb = get_thumbnail(open('/tmp/thumb.jpeg', 'rb'), size=(120, 120), quality=80)
-        open('/tmp/thumb.jpeg', 'wb').write(thumb.getvalue())
-    """
-    assert isinstance(size, (list, tuple)) and len(size) == 2
-    assert new_format in ('jpeg', 'png', 'gif')
-    assert 0 < jpeg_quality <= 100
-    f.seek(0)
-    img = Image.open(f)
-    img.thumbnail(size, Image.BICUBIC)
-    t = StringIO()
-    img.save(t, format=new_format, quality=jpeg_quality)
-    return t
