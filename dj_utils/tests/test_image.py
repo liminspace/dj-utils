@@ -53,8 +53,8 @@ class TestAdjustImage(unittest.TestCase):
 
     def test_size_not_fill_not_stretch(self):
         self.make_files_for_images()
-        self.assertFalse(adjust_image(self.f_200x200_jpeg, (200, 200)))
-        self.assertFalse(adjust_image(self.f_300x300_jpeg, (300, 400)))
+        self.assertFalse(adjust_image(self.f_200x200_png, (200, 200)))
+        self.assertFalse(adjust_image(self.f_300x300_png, (300, 400)))
         self.assertTrue(adjust_image(self.f_400x200_jpeg, (200, 200)))
         self.assertImageSizeIs(self.f_400x200_jpeg, (200, 100))
         self.assertTrue(adjust_image(self.f_200x400_jpeg, (200, 200)))
@@ -62,14 +62,14 @@ class TestAdjustImage(unittest.TestCase):
 
     def test_size_not_fill_stretch(self):
         self.make_files_for_images()
-        self.assertFalse(adjust_image(self.f_200x200_jpeg, (200, 200), stretch=True))
-        self.assertFalse(adjust_image(self.f_300x300_jpeg, (300, 400), stretch=True))
+        self.assertTrue(adjust_image(self.f_200x200_jpeg, (200, 200), stretch=True))
+        self.assertFalse(adjust_image(self.f_300x300_jpeg, (300, 400), stretch=True, force_jpeg_save=False))
         self.assertTrue(adjust_image(self.f_400x200_jpeg, (500, 500), stretch=True))
         self.assertImageSizeIs(self.f_400x200_jpeg, (500, 250))
 
     def test_size_fill_not_stretch(self):
         self.make_files_for_images()
-        self.assertFalse(adjust_image(self.f_200x200_jpeg, (200, 200), fill=True))
+        self.assertFalse(adjust_image(self.f_200x200_png, (200, 200), fill=True))
         self.assertTrue(adjust_image(self.f_400x200_jpeg, (100, 100), fill=True))
         self.assertImageSizeIs(self.f_400x200_jpeg, (100, 100))
 
@@ -78,7 +78,7 @@ class TestAdjustImage(unittest.TestCase):
 
     def test_size_fill_stretch(self):
         self.make_files_for_images()
-        self.assertFalse(adjust_image(self.f_200x200_jpeg, (200, 200), fill=True, stretch=True))
+        self.assertFalse(adjust_image(self.f_200x200_png, (200, 200), fill=True, stretch=True))
         self.assertTrue(adjust_image(self.f_300x300_jpeg, (400, 350), fill=True, stretch=True))
         self.assertImageSizeIs(self.f_300x300_jpeg, (400, 350))
 

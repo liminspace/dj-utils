@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import
-from StringIO import StringIO
 import imghdr
+from StringIO import StringIO
 from PIL import Image
 from django.core.files.uploadedfile import UploadedFile
 from dj_utils.file import truncate_file
@@ -57,7 +57,7 @@ def is_image(f, types=('png', 'jpeg', 'gif'), set_content_type=True):
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
-                 return_new_image=False):
+                 return_new_image=False, force_jpeg_save=True):
     """
     Підганяє зображення під параметри.
     max_size - максимальний розмір картинки. один з розмірів може бути None (авто)
@@ -66,6 +66,7 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
     fill - чи зображення має бути заповненим при обрізці (інакше буде вписане)
     stretch - чи розтягувати, якщо картинка замаленька
     return_new_image - якщо True, тоді буде повертатись новий об'єкт StringIO картинки. Інакше bool, чи файл змінювався.
+    force_jpeg_save - якщо True, тоді якщо файл JPEG, то він буде перезбережений в будь-якому випадку
     """
     assert isinstance(max_size, (list, tuple)) and len(max_size) == 2
     assert 0 < jpeg_quality <= 100
@@ -108,8 +109,10 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
             img = getattr(img, img_method)(*method_args, **method_kwargs)
             ch_size = True
     if new_format and new_format != img_format:
-        ch_format = True
         img_format = new_format
+        ch_format = True
+    if not ch_format and img_format == 'jpeg' and force_jpeg_save:
+        ch_format = True
     if return_new_image:
         f = StringIO()
         img.save(f, img_format, jpeg_quality=jpeg_quality)
