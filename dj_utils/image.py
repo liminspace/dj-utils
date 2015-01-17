@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import
 import imghdr
+import os
 from StringIO import StringIO
 from PIL import Image
 from django.core.files.uploadedfile import UploadedFile
@@ -53,6 +54,7 @@ def is_image(f, types=('png', 'jpeg', 'gif'), set_content_type=True):
         return False
     if isinstance(f, UploadedFile) and set_content_type:
         f.content_type = 'image/%s' % t
+        f.name = os.path.splitext(f.name)[0] + '.' + t
     return True
 
 
@@ -125,4 +127,5 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
             f.seek(0, 2)
             f.size = f.tell()
             f.content_type = 'image/%s' % new_format
+            f.name = os.path.splitext(f.name)[0] + '.' + new_format
     return ch_size or ch_format
