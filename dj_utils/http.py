@@ -115,6 +115,7 @@ def get_urls_for_langs(request):
     Повертає словник з посиланням на дану сторінку для різних мов.
     {'en': '/about-us', 'uk': '/ua/pro-nas'}
     Повертає None, якщо в request немає resolver_match (тобто помилка на етапі process_request)
+    Якщо в url використовується slug, тоді дана функція з цим не справиться.
     """
     urls = {}
     current_lang = translation.get_language()
