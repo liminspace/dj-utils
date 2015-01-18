@@ -151,7 +151,7 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
         if not os.path.isdir(dir_path):
             continue
         for fn_path in find_files(dir_path):
-            m = r.match(fn_path)
+            m = r.match(os.path.basename(fn_path))
             if not m:
                 continue
             total += 1
