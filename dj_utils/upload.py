@@ -146,6 +146,7 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
     old_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=max_lifetime)
     r = re.compile(r"^%s(?P<dtstr>[a-z0-9]+?)_[a-z0-9]+?(?:_.+?)?\.[a-z0-9]{1,8}$" % TMP_PREFIX, re.I)
     find_files = get_files_recursive if recursive else get_files
+    total = removed = 0
     for dir_path in dirs:
         if not os.path.isdir(dir_path):
             continue
@@ -153,6 +154,9 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
             m = r.match(fn_path)
             if not m:
                 continue
+            total += 1
             fdt = dtstr_to_datetime(m.group('dtstr'))
             if fdt and old_dt > fdt:
                 os.remove(fn_path)
+                removed += 1
+    return removed, total
