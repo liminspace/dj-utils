@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
+import glob
 import os
 import re
 import datetime
@@ -9,12 +10,12 @@ from dj_utils.tools import datetime_to_dtstr, dtstr_to_datetime
 
 
 TMP_PREFIX = '__tmp__'
+THUMB_SUFFIX = '__thumb__'
+IMAGES_EXTS = ('jpeg', 'jpg', 'png', 'gif')
 
 
 def generate_filename(ext=None, label=None):
-    """
-    Генерує ім'я фалу.
-    """
+    """ Генерує ім'я фала. """
     if ext and not ext.startswith('.'):
         ext = '.' + ext
     if label:
@@ -28,79 +29,130 @@ def generate_filename(ext=None, label=None):
 
 
 def add_tmp_prefix_to_filename(filename):
-    """ Додає префікс тимчасового файлу до імені файлу """
+    """ Додає префікс тимчасового файлу до імені файлу. """
     return TMP_PREFIX + filename
 
 
+def add_thumb_suffix_to_filename(filename, label=None):
+    """ Додає суфікс мініатюри до імені файла. Якщо суфікс вже є, тоді буде помилка ValueError. """
+    return add_ending_to_filename(filename, '{}{}'.format(THUMB_SUFFIX, label or ''))
+
+
 def add_ending_to_filename(filename, ending):
-    """ Додає закінчення до імені файлу """
+    """ Додає закінчення до імені файла. Якщо ім'я файлу має суфікс thumb, тоді буде помилка ValueError. """
+    if THUMB_SUFFIX in filename:
+        raise ValueError('Arg filename has thumb suffix "{suffix}": {fn}'.format(suffix=THUMB_SUFFIX, fn=filename))
     ending = re.sub(r'[^a-z0-9_\-]', '', ending, flags=re.I)[:60]
     if ending:
+        if not ending.startswith('_'):
+            ending = '_' + ending
         fn, ext = os.path.splitext(filename)
-        filename = '{fn}_{ending}{ext}'.format(fn=fn, ending=ending, ext=ext)
+        filename = '{fn}{ending}{ext}'.format(fn=fn, ending=ending, ext=ext)
     return filename
 
 
-def get_subdir_for_filename(filename):
-    """ Повертає назву підпапки для файлу (dtstr[-2:]) """
+def get_subdir_for_filename(filename, default='other'):
+    """ Повертає назву підпапки для файлу (dtstr[-2:]). """
     if filename.startswith(TMP_PREFIX):
         filename = filename[len(TMP_PREFIX):]
     m = re.match(r'^([a-z0-9]+?)_.+', filename)
     if m:
         return m.group(1)[-2:]
-    return 'other'
+    return default
 
 
-def url_to_fn(url):
-    """
-    Повертає шлях до файлу MEDIA по URL-адресі
-    """
+def get_filepath_of_url(url):
+    """ Повертає шлях до файлу MEDIA по URL-адресі. """
     if url.startswith(settings.MEDIA_URL):
         url = url[len(settings.MEDIA_URL):]
     fn = os.path.join(settings.MEDIA_ROOT, os.path.normpath(url)).replace('\\', '/')
     return fn
 
 
-def remove_file_by_url(url):
+def remove_file_by_url(url, with_thumbs=True):
     """
     Видаляє файл по URL, якщо він знаходиться в папці MEDIA.
+    with_thumbs - шукати і видаляти мініатюри файлу.
     """
-    fn = url_to_fn(url)
-    if os.path.exists(fn) and os.path.isfile(fn):
-        os.remove(fn)
+    files = [get_filepath_of_url(url)]
+    if with_thumbs:
+        files.extend(get_thumbs_for_image(files[0]))
+    for filepath in files:
+        if os.path.isfile(filepath):
+            os.remove(filepath)
 
 
-def move_to_permalink(url):
+def get_thumbs_for_image(filepath, label=None):
+    """
+    Повертає список шляхів на мініатюри для файлу filepath.
+    Якщо переданий label, тоді буде додаткове відсіювання.
+    """
+    dir_path, filename = os.path.split(os.path.abspath(filepath))
+    name = add_thumb_suffix_to_filename(os.path.splitext(filename)[0], label=label)
+    pattern = os.path.join(dir_path, name).replace('\\', '/') + '*.*'
+    return [fn for fn in glob.iglob(pattern) if os.path.splitext(fn)[1].lstrip('.').lower() in IMAGES_EXTS]
+
+
+def move_to_permalink(url, with_thumbs=True):
+    """
+    Видаляє з файлу маркер тимчасовості.
+    with_thumbs - шукати і застосовувати дану функцію на мініатюрах.
+    """
     r = re.compile(r'^(.+?)(%s)(.+?)$' % TMP_PREFIX, re.I)
     url_m = r.match(url)
     if url_m:
-        fn = url_to_fn(url)
-        if os.path.exists(fn) and os.path.isfile(fn):
-            fn_m = r.match(fn)
+        main_filename = get_filepath_of_url(url)
+        if not os.path.isfile(main_filename):
+            return url
+        files = [main_filename]
+        if with_thumbs:
+            files.extend(get_thumbs_for_image(main_filename))
+        for filepath in files:
+            fn_m = r.match(filepath)
             if fn_m:
-                os.rename(fn, fn_m.group(1) + url_m.group(3))
-                url = url_m.group(1) + url_m.group(3)
+                try:
+                    os.rename(filepath, fn_m.group(1) + url_m.group(3))
+                except EnvironmentError, e:
+                    # pass  # todo додати логування помилки
+                    raise e
+            else:
+                pass  # todo додати логування неспівпадіння імені файлу до шаблону
+        url = url_m.group(1) + url_m.group(3)
     return url
 
 
-def remove_old_tmp_files(subdirs, max_lifetime=(7 * 24), tmp_prefix=TMP_PREFIX):
+def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
     """
     Видалення старих тимчасових файлів.
     Запускати функцію періодично раз на добу або рідше.
+    dirs -- список шляхів до папок, в яких треба зробити чистку (шлях має бути абсолютний)
     max_lifetime -- час життя файлу, в годинах.
     Запуск в консолі:
     # python manage.py shell
     > from dj_utils.upload import remove_old_tmp_files
     > remove_old_tmp_files(['images'], (4 * 24))
     """
-    for subdir in subdirs:
-        path = os.path.join(settings.MEDIA_ROOT, subdir).replace('\\', '/')
-        old_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=max_lifetime)
-        r = re.compile(r"^(%s)([a-z0-9_\-]+?)((?:_.+?)?)(\.[a-z]{3,4})$" % tmp_prefix, re.I)
-        for fn in os.listdir(path):
-            m = r.match(fn)
-            if m:
-                prefix, name, label, ext = m.groups()
-                fdt = dtstr_to_datetime(name)
-                if fdt and old_dt > fdt:
-                    os.remove(os.path.join(path, fn).replace('\\', '/'))
+    def get_files_recursive(path):
+        for w_root, w_dirs, w_files in os.walk(path):
+            for w_file in w_files:
+                yield os.path.join(w_root, w_file).replace('\\', '/')
+
+    def get_files(path):
+        pattern = os.path.join(path, TMP_PREFIX + '*').replace('\\', '/')
+        for filepath in glob.iglob(pattern):
+            if os.path.isfile(filepath):
+                yield filepath
+
+    old_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=max_lifetime)
+    r = re.compile(r"^%s(?P<dtstr>[a-z0-9]+?)_[a-z0-9]+?(?:_.+?)?\.[a-z0-9]{1,8}$" % TMP_PREFIX, re.I)
+    find_files = get_files_recursive if recursive else get_files
+    for dir_path in dirs:
+        if not os.path.isdir(dir_path):
+            continue
+        for fn_path in find_files(dir_path):
+            m = r.match(fn_path)
+            if not m:
+                continue
+            fdt = dtstr_to_datetime(m.group('dtstr'))
+            if fdt and old_dt > fdt:
+                os.remove(fn_path)
