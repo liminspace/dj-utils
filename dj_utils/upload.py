@@ -69,6 +69,23 @@ def get_filepath_of_url(url):
     return fn
 
 
+def make_thumb_url(url, label=None, ext=None):
+    """
+    Генерує URL до мініатюри з URL основної картинки, label мініатюри та розширення.
+    Якщо URL вже є на мініатюру, тоді повертає None.
+    """
+    path, filename = os.path.split(url)
+    try:
+        filename = add_thumb_suffix_to_filename(filename, label=label)
+    except ValueError:
+        return None
+    if ext:
+        if not ext.startswith('.'):
+            ext = '.' + ext
+        filename = os.path.splitext(filename)[0] + ext
+    return os.path.join(path, filename).replace('\\', '/')
+
+
 def remove_file_by_url(url, with_thumbs=True):
     """
     Видаляє файл по URL, якщо він знаходиться в папці MEDIA.
@@ -90,7 +107,8 @@ def get_thumbs_for_image(filepath, label=None):
     dir_path, filename = os.path.split(os.path.abspath(filepath))
     name = add_thumb_suffix_to_filename(os.path.splitext(filename)[0], label=label)
     pattern = os.path.join(dir_path, name).replace('\\', '/') + '*.*'
-    return [fn for fn in glob.iglob(pattern) if os.path.splitext(fn)[1].lstrip('.').lower() in IMAGES_EXTS]
+    return [fn.replace('\\', '/') for fn in glob.iglob(pattern)
+            if os.path.splitext(fn)[1].lstrip('.').lower() in IMAGES_EXTS]
 
 
 def move_to_permalink(url, with_thumbs=True):
@@ -111,7 +129,7 @@ def move_to_permalink(url, with_thumbs=True):
             fn_m = r.match(filepath)
             if fn_m:
                 try:
-                    os.rename(filepath, fn_m.group(1) + url_m.group(3))
+                    os.rename(filepath, fn_m.group(1) + fn_m.group(3))
                 except EnvironmentError, e:
                     # pass  # todo додати логування помилки
                     raise e

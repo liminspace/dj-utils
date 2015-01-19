@@ -20,7 +20,7 @@ class Command(LoggingBaseCommand):
     def handle(self, *args, **options):
         if not options['dirs']:
             raise CommandError('Please, specify path to dir using option -d or --dir: -d /path/to/dir')
-        self.log('Begin')
+        self.log('Start')
         self.log('Dirs: {}'.format(', '.join(options['dirs'])), add_time=False)
         self.log('Max lifetime: {} h'.format(options['max_lifetime']), add_time=False)
         self.log('Recursive: {}'.format(('no', 'yes')[options['recursive']]), add_time=False)

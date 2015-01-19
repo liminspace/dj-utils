@@ -12,6 +12,7 @@ from dj_utils import gravatar
 from dj_utils.tcache import cache_set
 from dj_utils.http import full_url, get_urls_for_langs
 from dj_utils.tools import long_number_readable
+from dj_utils.upload import make_thumb_url
 
 
 register = template.Library()
@@ -467,3 +468,8 @@ def get_urls_for_langs_(context):
     {'en': '/about-us', 'uk': '/ua/pro-nas'}
     """
     return get_urls_for_langs(context['request'])
+
+
+@register.assignment_tag(name='make_thumb_url')
+def make_thumb_url_(url, label=None, ext=None):
+    return make_thumb_url(url, label=label, ext=ext) or url
