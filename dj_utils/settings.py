@@ -69,7 +69,7 @@ DJU_IMG_UPLOAD_PROFILE_THUMBNAIL_DEFAULT = {
 }
 
 # профілі
-DJU_IMG_UPLOAD_PROFILES = getattr(settings, 'IMG_', {})
+DJU_IMG_UPLOAD_PROFILES = getattr(settings, 'DJU_IMG_UPLOAD_PROFILES', {})
 
 DJU_IMG_UPLOAD_TMP_PREFIX = getattr(settings, 'DJU_IMG_UPLOAD_TMP_PREFIX', '__tmp__')
 DJU_IMG_UPLOAD_THUMB_SUFFIX = getattr(settings, 'DJU_IMG_UPLOAD_THUMB_SUFFIX', '__thumb__')
