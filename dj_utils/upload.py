@@ -1,17 +1,26 @@
 # coding=utf-8
 from __future__ import absolute_import
+import copy
 import glob
 import os
 import re
 import datetime
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from dj_utils import settings as u_settings
 from dj_utils.tools import datetime_to_dtstr, dtstr_to_datetime
 
 
-TMP_PREFIX = '__tmp__'
-THUMB_SUFFIX = '__thumb__'
-IMAGES_EXTS = ('jpeg', 'jpg', 'png', 'gif')
+def get_profile_configs(profile):
+    """ Повертає налаштування для профіля """
+    conf = copy.deepcopy(u_settings.DJU_IMG_UPLOAD_PROFILE_DEFAULT)
+    if profile in u_settings.DJU_IMG_UPLOAD_PROFILES:
+        conf.update(copy.deepcopy(u_settings.DJU_IMG_UPLOAD_PROFILES[profile]))
+        for tn_i in xrange(len(conf['THUMBNAILS'])):
+            t = conf['THUMBNAILS'][tn_i]
+            conf['THUMBNAILS'][tn_i] = copy.deepcopy(u_settings.DJU_IMG_UPLOAD_PROFILE_THUMBNAIL_DEFAULT)
+            conf['THUMBNAILS'][tn_i].update(t)
+    return conf
 
 
 def generate_filename(ext=None, label=None):
@@ -30,18 +39,20 @@ def generate_filename(ext=None, label=None):
 
 def add_tmp_prefix_to_filename(filename):
     """ Додає префікс тимчасового файлу до імені файлу. """
-    return TMP_PREFIX + filename
+    return u_settings.DJU_IMG_UPLOAD_TMP_PREFIX + filename
 
 
 def add_thumb_suffix_to_filename(filename, label=None):
     """ Додає суфікс мініатюри до імені файла. Якщо суфікс вже є, тоді буде помилка ValueError. """
-    return add_ending_to_filename(filename, '{}{}'.format(THUMB_SUFFIX, label or ''))
+    return add_ending_to_filename(filename, '{}{}'.format(u_settings.DJU_IMG_UPLOAD_THUMB_SUFFIX, label or ''))
 
 
 def add_ending_to_filename(filename, ending):
     """ Додає закінчення до імені файла. Якщо ім'я файлу має суфікс thumb, тоді буде помилка ValueError. """
-    if THUMB_SUFFIX in filename:
-        raise ValueError('Arg filename has thumb suffix "{suffix}": {fn}'.format(suffix=THUMB_SUFFIX, fn=filename))
+    if u_settings.DJU_IMG_UPLOAD_THUMB_SUFFIX in filename:
+        raise ValueError('Arg filename has thumb suffix "{suffix}": {fn}'.format(
+            suffix=u_settings.DJU_IMG_UPLOAD_THUMB_SUFFIX, fn=filename
+        ))
     ending = re.sub(r'[^a-z0-9_\-]', '', ending, flags=re.I)[:60]
     if ending:
         if not ending.startswith('_'):
@@ -53,8 +64,8 @@ def add_ending_to_filename(filename, ending):
 
 def get_subdir_for_filename(filename, default='other'):
     """ Повертає назву підпапки для файлу (dtstr[-2:]). """
-    if filename.startswith(TMP_PREFIX):
-        filename = filename[len(TMP_PREFIX):]
+    if filename.startswith(u_settings.DJU_IMG_UPLOAD_TMP_PREFIX):
+        filename = filename[len(u_settings.DJU_IMG_UPLOAD_TMP_PREFIX):]
     m = re.match(r'^([a-z0-9]+?)_.+', filename)
     if m:
         return m.group(1)[-2:]
@@ -108,7 +119,7 @@ def get_thumbs_for_image(filepath, label=None):
     name = add_thumb_suffix_to_filename(os.path.splitext(filename)[0], label=label)
     pattern = os.path.join(dir_path, name).replace('\\', '/') + '*.*'
     return [fn.replace('\\', '/') for fn in glob.iglob(pattern)
-            if os.path.splitext(fn)[1].lstrip('.').lower() in IMAGES_EXTS]
+            if os.path.splitext(fn)[1].lstrip('.').lower() in u_settings.DJU_IMG_UPLOAD_IMG_EXTS]
 
 
 def move_to_permalink(url, with_thumbs=True):
@@ -116,7 +127,7 @@ def move_to_permalink(url, with_thumbs=True):
     Видаляє з файлу маркер тимчасовості.
     with_thumbs - шукати і застосовувати дану функцію на мініатюрах.
     """
-    r = re.compile(r'^(.+?)(%s)(.+?)$' % TMP_PREFIX, re.I)
+    r = re.compile(r'^(.+?)(%s)(.+?)$' % u_settings.DJU_IMG_UPLOAD_TMP_PREFIX, re.I)
     url_m = r.match(url)
     if url_m:
         main_filename = get_filepath_of_url(url)
@@ -156,13 +167,16 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
                 yield os.path.join(w_root, w_file).replace('\\', '/')
 
     def get_files(path):
-        pattern = os.path.join(path, TMP_PREFIX + '*').replace('\\', '/')
+        pattern = os.path.join(path, u_settings.DJU_IMG_UPLOAD_TMP_PREFIX + '*').replace('\\', '/')
         for filepath in glob.iglob(pattern):
             if os.path.isfile(filepath):
                 yield filepath
 
     old_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=max_lifetime)
-    r = re.compile(r"^%s(?P<dtstr>[a-z0-9]+?)_[a-z0-9]+?(?:_.+?)?\.[a-z0-9]{1,8}$" % TMP_PREFIX, re.I)
+    r = re.compile(
+        r"^%s(?P<dtstr>[a-z0-9]+?)_[a-z0-9]+?(?:_.+?)?\.[a-z0-9]{1,8}$" % u_settings.DJU_IMG_UPLOAD_TMP_PREFIX,
+        re.I
+    )
     find_files = get_files_recursive if recursive else get_files
     total = removed = 0
     for dir_path in dirs:
@@ -178,3 +192,37 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
                 os.remove(fn_path)
                 removed += 1
     return removed, total
+
+
+def save_file(f, filename, path, tmp=True):
+    """
+    Збереження файлу.
+    f - файл (об'єкт типу file)
+    filename - назва файлу
+    path - відносний шляд від папки DJU_IMG_UPLOAD_SUBDIR
+    tmp - чи потрібно додати маркер тимчасового файла
+    """
+    path = path.strip('\\/')
+    subdir = get_subdir_for_filename(filename)
+    if tmp:
+        filename = add_tmp_prefix_to_filename(filename)
+    dir_path = os.path.join(settings.MEDIA_ROOT, u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir).replace('\\', '/')
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path, u_settings.DJU_CHMOD_DIR)
+    fn_path = os.path.join(dir_path, filename).replace('\\', '/')
+    with open(fn_path, 'wb') as t:
+        f.seek(0)
+        while True:
+            buf = f.read(u_settings.DJU_RW_FILE_BUFFER_SIZE)
+            if not buf:
+                break
+            t.write(buf)
+    os.chmod(fn_path, u_settings.DJU_CHMOD_FILE)
+    rel_dir_path = (os.path.join(u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir) + '/').replace('\\', '/')
+    return {
+        'dir_path': dir_path,                                    # повний шлях до папки зі збереженим файлом
+        'fn_path': fn_path,                                      # повний шлях до збереженого файлу
+        'dir_url': settings.MEDIA_URL + rel_dir_path,            # абсолютний URL до папки зі збереженим файлом
+        'fn_url': settings.MEDIA_URL + rel_dir_path + filename,  # абсолютний URL до збереженого файлу
+        'rel_fn_path': rel_dir_path + filename,                  # відносний шлях до файлу (для збереження в БД)
+    }
