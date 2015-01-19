@@ -3,8 +3,9 @@ from __future__ import absolute_import
 import os
 from dj_utils.http import send_json
 from django.utils.translation import ugettext as _
-from dj_utils.image import image_get_format, adjust_image
-from dj_utils.upload import get_profile_configs, generate_filename, add_thumb_suffix_to_filename, save_file
+from dj_utils.image import image_get_format, adjust_image, is_image
+from dj_utils.upload import (get_profile_configs, generate_filename, add_thumb_suffix_to_filename, save_file,
+                             gen_thumb_label)
 
 
 def upload_image(request):
@@ -36,8 +37,7 @@ def upload_image(request):
         return send_json({'error': _('Uploaded file not found.')})
     conf = get_profile_configs(request.REQUEST.get('profile'))
     f = request.FILES['image']
-    file_format = image_get_format(f)
-    if not file_format or file_format.upper() not in conf['TYPES']:
+    if not is_image(f, types=conf['TYPES']):
         return send_json({
             'error': _('Format of downloaded file is not allowed. Allowed: %s.') % ', '.join(conf['TYPES'])
         })
@@ -48,17 +48,14 @@ def upload_image(request):
     data = {'upload': {'url': saved_file['fn_url'],
                        'url_to_save': saved_file['rel_fn_path']}}
     thumb_data = []
-    for sn_conf in conf['THUMBNAILS']:
-        sn_f = adjust_image(f, max_size=sn_conf['MAX_SIZE'], new_format=sn_conf['FORMAT'],
-                            jpeg_quality=sn_conf['JPEG_QUALITY'], fill=sn_conf['FILL'], stretch=sn_conf['STRETCH'],
+    for tn_conf in conf['THUMBNAILS']:
+        tn_f = adjust_image(f, max_size=tn_conf['MAX_SIZE'], new_format=tn_conf['FORMAT'],
+                            jpeg_quality=tn_conf['JPEG_QUALITY'], fill=tn_conf['FILL'], stretch=tn_conf['STRETCH'],
                             return_new_image=True)
-        sn_filename = os.path.splitext(filename)[0] + '.' + image_get_format(sn_f)
-        label = sn_conf['LABEL'] or ''
-        if not label:
-            label = 'x'.join(map(str, filter(None, sn_conf['MAX_SIZE'])))
-        sn_filename = add_thumb_suffix_to_filename(sn_filename, label)
-        saved_sn = save_file(sn_f, sn_filename, conf['PATH'])
-        thumb_data.append({'url': saved_sn['fn_url'],
-                           'url_to_save': saved_sn['rel_fn_path']})
+        tn_filename = os.path.splitext(filename)[0] + '.' + image_get_format(tn_f)
+        tn_filename = add_thumb_suffix_to_filename(tn_filename, tn_conf['LABEL'] or gen_thumb_label(tn_conf))
+        saved_tn = save_file(tn_f, tn_filename, conf['PATH'], tmp=True)
+        thumb_data.append({'url': saved_tn['fn_url'],
+                           'url_to_save': saved_tn['rel_fn_path']})
     data['upload']['thumbnails'] = thumb_data
     return send_json(data)

@@ -26,4 +26,4 @@ class Command(LoggingBaseCommand):
         self.log('Recursive: {}'.format(('no', 'yes')[options['recursive']]), add_time=False)
         removed, total = remove_old_tmp_files(options['dirs'], max_lifetime=options['max_lifetime'],
                                               recursive=options['recursive'])
-        self.log('End. Deleted: {rm} / {tt}'.format(rm=removed, tt=total), double_br=True)
+        self.log('End. Removed: {rm} / {tt}'.format(rm=removed, tt=total), double_br=True)

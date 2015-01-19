@@ -8,6 +8,7 @@ import datetime
 from django.conf import settings
 from django.utils.crypto import get_random_string
 from dj_utils import settings as u_settings
+from dj_utils.image import image_get_format, is_image, adjust_image
 from dj_utils.tools import datetime_to_dtstr, dtstr_to_datetime
 
 
@@ -97,6 +98,13 @@ def make_thumb_url(url, label=None, ext=None):
     return os.path.join(path, filename).replace('\\', '/')
 
 
+def gen_thumb_label(thumb_conf):
+    """
+    Генерує назву для мініатюри на основі налаштувань (розмірів мініатюри)
+    """
+    return 'x'.join(map(str, filter(None, thumb_conf['MAX_SIZE'])))
+
+
 def remove_file_by_url(url, with_thumbs=True):
     """
     Видаляє файл по URL, якщо він знаходиться в папці MEDIA.
@@ -150,6 +158,40 @@ def move_to_permalink(url, with_thumbs=True):
     return url
 
 
+def save_file(f, filename, path, tmp=False):
+    """
+    Збереження файлу.
+    f - файл (об'єкт типу file)
+    filename - назва файлу
+    path - відносний шляд від папки DJU_IMG_UPLOAD_SUBDIR
+    tmp - чи потрібно додати маркер тимчасового файла
+    """
+    path = path.strip('\\/')
+    subdir = get_subdir_for_filename(filename)
+    if tmp:
+        filename = add_tmp_prefix_to_filename(filename)
+    dir_path = os.path.join(settings.MEDIA_ROOT, u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir).replace('\\', '/')
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path, u_settings.DJU_CHMOD_DIR)
+    fn_path = os.path.join(dir_path, filename).replace('\\', '/')
+    with open(fn_path, 'wb') as t:
+        f.seek(0)
+        while True:
+            buf = f.read(u_settings.DJU_RW_FILE_BUFFER_SIZE)
+            if not buf:
+                break
+            t.write(buf)
+    os.chmod(fn_path, u_settings.DJU_CHMOD_FILE)
+    rel_dir_path = (os.path.join(u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir) + '/').replace('\\', '/')
+    return {
+        'dir_path': dir_path,                                    # повний шлях до папки зі збереженим файлом
+        'fn_path': fn_path,                                      # повний шлях до збереженого файлу
+        'dir_url': settings.MEDIA_URL + rel_dir_path,            # абсолютний URL до папки зі збереженим файлом
+        'fn_url': settings.MEDIA_URL + rel_dir_path + filename,  # абсолютний URL до збереженого файлу
+        'rel_fn_path': rel_dir_path + filename,                  # відносний шлях до файлу (для збереження в БД)
+    }
+
+
 def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
     """
     Видалення старих тимчасових файлів.
@@ -194,35 +236,40 @@ def remove_old_tmp_files(dirs, max_lifetime=(7 * 24), recursive=True):
     return removed, total
 
 
-def save_file(f, filename, path, tmp=True):
+def remake_thumbs(profiles, clean=True):
     """
-    Збереження файлу.
-    f - файл (об'єкт типу file)
-    filename - назва файлу
-    path - відносний шляд від папки DJU_IMG_UPLOAD_SUBDIR
-    tmp - чи потрібно додати маркер тимчасового файла
+    Перестворює мініатюри для картинок згідно налаштувань.
+    profiles - список з профілями, для яких треба застосувати дану функцію.
+    clean - чи потрібно перед створення видалити ВСІ мініатюри для вказаних профілів.
     """
-    path = path.strip('\\/')
-    subdir = get_subdir_for_filename(filename)
-    if tmp:
-        filename = add_tmp_prefix_to_filename(filename)
-    dir_path = os.path.join(settings.MEDIA_ROOT, u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir).replace('\\', '/')
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path, u_settings.DJU_CHMOD_DIR)
-    fn_path = os.path.join(dir_path, filename).replace('\\', '/')
-    with open(fn_path, 'wb') as t:
-        f.seek(0)
-        while True:
-            buf = f.read(u_settings.DJU_RW_FILE_BUFFER_SIZE)
-            if not buf:
-                break
-            t.write(buf)
-    os.chmod(fn_path, u_settings.DJU_CHMOD_FILE)
-    rel_dir_path = (os.path.join(u_settings.DJU_IMG_UPLOAD_SUBDIR, path, subdir) + '/').replace('\\', '/')
-    return {
-        'dir_path': dir_path,                                    # повний шлях до папки зі збереженим файлом
-        'fn_path': fn_path,                                      # повний шлях до збереженого файлу
-        'dir_url': settings.MEDIA_URL + rel_dir_path,            # абсолютний URL до папки зі збереженим файлом
-        'fn_url': settings.MEDIA_URL + rel_dir_path + filename,  # абсолютний URL до збереженого файлу
-        'rel_fn_path': rel_dir_path + filename,                  # відносний шлях до файлу (для збереження в БД)
-    }
+    def get_files_recursive(path):
+        for w_root, w_dirs, w_files in os.walk(path):
+            for w_file in w_files:
+                yield os.path.join(w_root, w_file).replace('\\', '/')
+
+    removed = created = 0
+    for profile in profiles:
+        conf = get_profile_configs(profile)
+        profile_path = os.path.join(settings.MEDIA_ROOT, u_settings.DJU_IMG_UPLOAD_SUBDIR,
+                                    conf['PATH']).replace('\\', '/')
+        if clean:
+            for fn in get_files_recursive(profile_path):
+                if u_settings.DJU_IMG_UPLOAD_THUMB_SUFFIX in os.path.basename(fn):
+                    os.remove(fn)
+                    removed += 1
+        for fn in get_files_recursive(profile_path):
+            filename = os.path.basename(fn)
+            if u_settings.DJU_IMG_UPLOAD_THUMB_SUFFIX in filename:
+                continue  # пропускаємо файли, які мають суфікс мініатюри
+            with open(fn, 'rb') as f:
+                if not is_image(f, types=conf['TYPES']):
+                    continue
+                for tn_conf in conf['THUMBNAILS']:
+                    tn_f = adjust_image(f, max_size=tn_conf['MAX_SIZE'], new_format=tn_conf['FORMAT'],
+                                        jpeg_quality=tn_conf['JPEG_QUALITY'], fill=tn_conf['FILL'],
+                                        stretch=tn_conf['STRETCH'], return_new_image=True)
+                    tn_fn = os.path.splitext(filename)[0] + '.' + image_get_format(tn_f)
+                    tn_fn = add_thumb_suffix_to_filename(tn_fn, tn_conf['LABEL'] or gen_thumb_label(tn_conf))
+                    save_file(tn_f, tn_fn, conf['PATH'])
+                    created += 1
+    return removed, created
