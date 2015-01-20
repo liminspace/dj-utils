@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import absolute_import
-import imghdr
 import os
 from StringIO import StringIO
 from PIL import Image
@@ -12,17 +11,8 @@ def image_get_format(f):
     """
     Визначає формат зображення.
     Повертає:
-        'rgb'  - SGI ImgLib Files
-        'gif'  - GIF 87a and 89a Files
-        'pbm'  - Portable Bitmap Files
-        'pgm'  - Portable Graymap Files
-        'ppm'  - Portable Pixmap Files
-        'tiff' - TIFF Files
-        'rast' - Sun Raster Files
-        'xbm'  - X Bitmap Files
-        'jpeg' - JPEG data in JFIF or Exif formats
-        'bmp'  - BMP files
-        'png'  - Portable Network Graphics
+        jpeg, png, gif і т.д.
+        http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html
     Приклад:
         if image_get_format(request.FILES['image']) == 'jpeg':
             print 'Image is JPEG'
@@ -31,9 +21,11 @@ def image_get_format(f):
             print 'File is PNG'
     """
     f.seek(0)
-    t = imghdr.what(f)
-    if isinstance(t, basestring):
-        t = t.lower()
+    try:
+        with Image.open(f) as img:
+            t = img.format.lower()
+    except IOError:
+        t = None
     return t
 
 
