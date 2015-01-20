@@ -22,8 +22,8 @@ def image_get_format(f):
     """
     f.seek(0)
     try:
-        with Image.open(f) as img:
-            t = img.format.lower()
+        img = Image.open(f)
+        t = img.format.lower()
     except IOError:
         t = None
     return t
