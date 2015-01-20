@@ -44,7 +44,7 @@ def upload_image(request):
     adjust_image(f, max_size=conf['MAX_SIZE'], new_format=conf['FORMAT'],
                  jpeg_quality=conf['JPEG_QUALITY'], fill=conf['FILL'], stretch=conf['STRETCH'])
     filename = generate_filename(ext=image_get_format(f), label=request.POST.get('label'))
-    saved_file = save_file(f, filename, conf['PATH'])
+    saved_file = save_file(f, filename, conf['PATH'], tmp=True)
     data = {'upload': {'url': saved_file['fn_url'],
                        'url_to_save': saved_file['rel_fn_path']}}
     thumb_data = []
