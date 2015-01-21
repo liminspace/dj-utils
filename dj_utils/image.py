@@ -1,8 +1,9 @@
 # coding=utf-8
 from __future__ import absolute_import
+from contextlib import contextmanager
 import os
 from StringIO import StringIO
-from PIL import Image
+from PIL import Image, ImageFile
 from django.core.files.uploadedfile import UploadedFile
 from dj_utils.file import truncate_file
 
@@ -48,6 +49,16 @@ def is_image(f, types=('png', 'jpeg', 'gif'), set_content_type=True):
         f.content_type = 'image/%s' % t
         f.name = os.path.splitext(f.name)[0] + '.' + t
     return True
+
+
+@contextmanager
+def image_save_buffer_fix():
+    before = ImageFile.MAXBLOCK
+    ImageFile.MAXBLOCK = 1048576
+    try:
+        yield
+    finally:
+        ImageFile.MAXBLOCK = before
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
@@ -109,12 +120,14 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
         ch_format = True
     if return_new_image:
         t = StringIO()
-        img.save(t, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
+        with image_save_buffer_fix():
+            img.save(t, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
         return t
     if ch_size or ch_format:
         img.load()
         truncate_file(f)
-        img.save(f, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
+        with image_save_buffer_fix():
+            img.save(f, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
         if isinstance(f, UploadedFile):
             f.seek(0, 2)
             f.size = f.tell()
