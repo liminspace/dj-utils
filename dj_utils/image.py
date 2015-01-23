@@ -52,13 +52,23 @@ def is_image(f, types=('png', 'jpeg', 'gif'), set_content_type=True):
 
 
 @contextmanager
-def image_save_buffer_fix():
+def image_save_buffer_fix(baxblock=1048576):
     before = ImageFile.MAXBLOCK
-    ImageFile.MAXBLOCK = 1048576
+    ImageFile.MAXBLOCK = baxblock
     try:
         yield
     finally:
         ImageFile.MAXBLOCK = before
+
+
+def _save_img(img, *args, **kwargs):
+    try:
+        with image_save_buffer_fix():
+            img.save(*args, **kwargs)
+    except IOError:
+        # kwargs.pop('optimize')
+        with image_save_buffer_fix(2 * 1048576):
+            img.save(*args, **kwargs)
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
@@ -120,14 +130,12 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
         ch_format = True
     if return_new_image:
         t = StringIO()
-        with image_save_buffer_fix():
-            img.save(t, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
+        _save_img(img, t, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
         return t
     if ch_size or ch_format:
         img.load()
         truncate_file(f)
-        with image_save_buffer_fix():
-            img.save(f, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
+        _save_img(img, f, format=img_format, quality=jpeg_quality, progressive=True, optimize=True)
         if isinstance(f, UploadedFile):
             f.seek(0, 2)
             f.size = f.tell()

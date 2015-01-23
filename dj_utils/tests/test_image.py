@@ -72,9 +72,10 @@ class TestAdjustImage(unittest.TestCase):
         self.assertFalse(adjust_image(self.f_200x200_png, (200, 200), fill=True))
         self.assertTrue(adjust_image(self.f_400x200_jpeg, (100, 100), fill=True))
         self.assertImageSizeIs(self.f_400x200_jpeg, (100, 100))
-
         self.assertTrue(adjust_image(self.f_200x400_jpeg, (400, 500), fill=True))
         self.assertImageSizeIs(self.f_200x400_jpeg, (200, 250))
+        self.assertTrue(adjust_image(self.f_300x300_jpeg, (150, 100), fill=True))
+        self.assertImageSizeIs(self.f_300x300_jpeg, (150, 100))
 
     def test_size_fill_stretch(self):
         self.make_files_for_images()
