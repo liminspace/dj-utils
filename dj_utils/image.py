@@ -62,13 +62,25 @@ def image_save_buffer_fix(baxblock=1048576):
 
 
 def _save_img(img, *args, **kwargs):
-    try:
-        with image_save_buffer_fix():
-            img.save(*args, **kwargs)
-    except IOError:
-        # kwargs.pop('optimize')
-        with image_save_buffer_fix(2 * 1048576):
-            img.save(*args, **kwargs)
+    modes = ({},
+             {'mb_x': 4},
+             {'mb_x': 4, 'disable_optimize': True})
+    maxblock = img.size[0] * img.size[1]
+    last_error = None
+    for mode in modes:
+        try:
+            kw = kwargs.copy()
+            if mode.get('disable_optimize'):
+                if not kw.get('optimize', False):
+                    continue
+                kw['optimize'] = False
+            with image_save_buffer_fix(maxblock * mode.get('mb_x', 1)):
+                img.save(*args, **kw)
+        except IOError, e:
+            last_error = e
+            continue
+    if last_error:
+        raise last_error
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
