@@ -74,6 +74,7 @@ DJU_IMG_UPLOAD_PROFILES = getattr(settings, 'DJU_IMG_UPLOAD_PROFILES', {})
 DJU_IMG_UPLOAD_TMP_PREFIX = getattr(settings, 'DJU_IMG_UPLOAD_TMP_PREFIX', '__tmp__')
 DJU_IMG_UPLOAD_THUMB_SUFFIX = getattr(settings, 'DJU_IMG_UPLOAD_THUMB_SUFFIX', '__thumb__')
 DJU_IMG_UPLOAD_IMG_EXTS = ('jpeg', 'jpg', 'png', 'gif')  # розширення файлів зображень
+DJU_IMG_USE_JPEGTRAN = getattr(settings, 'DJU_IMG_USE_JPEGTRAN', False)  # використання утиліти jpegtran (лише Linux)
 
 
 # ------------

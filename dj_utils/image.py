@@ -2,10 +2,12 @@
 from __future__ import absolute_import
 from contextlib import contextmanager
 import os
+import subprocess
 from StringIO import StringIO
 from PIL import Image, ImageFile
 from django.core.files.uploadedfile import UploadedFile
 from dj_utils.file import truncate_file
+from dj_utils import settings as u_settings
 
 
 def image_get_format(f):
@@ -61,7 +63,7 @@ def image_save_buffer_fix(baxblock=1048576):
         ImageFile.MAXBLOCK = before
 
 
-def _save_img(img, *args, **kwargs):
+def _save_img(img, f, *args, **kwargs):
     modes = ({},
              {'mb_x': 4},
              {'mb_x': 4, 'disable_optimize': True})
@@ -75,12 +77,22 @@ def _save_img(img, *args, **kwargs):
                     continue
                 kw['optimize'] = False
             with image_save_buffer_fix(maxblock * mode.get('mb_x', 1)):
-                img.save(*args, **kw)
+                img.save(f, *args, **kw)
+                break
         except IOError, e:
             last_error = e
-            continue
     if last_error:
         raise last_error
+    if img.format == 'JPEG' and u_settings.DJU_IMG_USE_JPEGTRAN:
+        try:
+            f.seek(0)
+            r = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
+                                 stdin=f, stdout=subprocess.PIPE)
+        except IOError:
+            r = None
+        if r:
+            truncate_file(f)
+            f.write(r.stdout.read())
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
