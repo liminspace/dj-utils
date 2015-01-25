@@ -86,14 +86,14 @@ def _save_img(img, f, *args, **kwargs):
     if img.format == 'JPEG' and u_settings.DJU_IMG_USE_JPEGTRAN:
         try:
             f.seek(0)
-            r = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
-                                 stdin=f, stdout=subprocess.PIPE)
-            r.wait()
+            p = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            r = p.communicate(f.read())
         except IOError:
             r = None
         if r:
             truncate_file(f)
-            f.write(r.stdout.read())
+            f.write(r)
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
