@@ -88,6 +88,7 @@ def _save_img(img, f, *args, **kwargs):
             f.seek(0)
             r = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
                                  stdin=f, stdout=subprocess.PIPE)
+            r.wait()
         except IOError:
             r = None
         if r:
