@@ -88,7 +88,7 @@ def _save_img(img, f, *args, **kwargs):
             f.seek(0)
             p = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            r = p.communicate(f.read())
+            r = p.communicate(f.read())[0]
         except IOError:
             r = None
         if r:
