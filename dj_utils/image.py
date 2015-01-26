@@ -107,7 +107,7 @@ def get_image_as_rgb(f):
     except IOError:
         r = None
     if r:
-        return Image.open(StringIO(f))
+        return Image.open(StringIO(r))
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
