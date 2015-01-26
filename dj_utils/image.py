@@ -1,9 +1,9 @@
 # coding=utf-8
 from __future__ import absolute_import
-from contextlib import contextmanager
 import os
 import subprocess
 from StringIO import StringIO
+from contextlib import contextmanager
 from PIL import Image, ImageFile
 from django.core.files.uploadedfile import UploadedFile
 from dj_utils.file import truncate_file
