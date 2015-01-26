@@ -65,19 +65,22 @@ def image_save_buffer_fix(baxblock=1048576):
 
 def _save_img(img, f, *args, **kwargs):
     modes = ({},
-             {'mb_x': 4},
-             {'mb_x': 4, 'disable_optimize': True})
+             {'mb_x': 5},
+             {'mb_x': 10},
+             {'mb_x': 10, 'disable_optimize': True},
+             {'mb_x': 10, 'disable_optimize': True, 'disable_progressive': True})
     maxblock = img.size[0] * img.size[1]
     last_error = None
     for mode in modes:
         try:
             kw = kwargs.copy()
             if mode.get('disable_optimize'):
-                if not kw.get('optimize', False):
-                    continue
-                kw['optimize'] = False
+                kw.pop('optimize')
+            if mode.get('disable_progressive'):
+                kw.pop('progressive')
             with image_save_buffer_fix(maxblock * mode.get('mb_x', 1)):
                 img.save(f, *args, **kw)
+                last_error = None
                 break
         except IOError, e:
             last_error = e
