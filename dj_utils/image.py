@@ -87,8 +87,8 @@ def _save_img(img, f, *args, **kwargs):
     if last_error:
         raise last_error
     if img.format == 'JPEG' and u_settings.DJU_IMG_USE_JPEGTRAN:
+        f.seek(0)
         try:
-            f.seek(0)
             p = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             r = p.communicate(f.read())[0]
@@ -97,6 +97,17 @@ def _save_img(img, f, *args, **kwargs):
         if r:
             truncate_file(f)
             f.write(r)
+
+
+def get_image_as_rgb(f):
+    f.seek(0)
+    try:
+        p = subprocess.Popen(['convert', '-colorspace rgb', '-', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        r = p.communicate(f.read())[0]
+    except IOError:
+        r = None
+    if r:
+        return Image.open(StringIO(f))
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
@@ -118,6 +129,8 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
         assert new_format in ('jpeg', 'png', 'gif')
     f.seek(0)
     img = Image.open(f)
+    if img.format == 'JPEG' and img.mode == 'CMYK' and u_settings.DJU_IMG_CONVERT_JPEG_TO_RGB:
+        img = get_image_as_rgb(f) or img
     max_width, max_height = max_size
     img_width, img_height = img.size
     img_format = img.format.lower()

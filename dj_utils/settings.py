@@ -75,6 +75,8 @@ DJU_IMG_UPLOAD_TMP_PREFIX = getattr(settings, 'DJU_IMG_UPLOAD_TMP_PREFIX', '__tm
 DJU_IMG_UPLOAD_THUMB_SUFFIX = getattr(settings, 'DJU_IMG_UPLOAD_THUMB_SUFFIX', '__thumb__')
 DJU_IMG_UPLOAD_IMG_EXTS = ('jpeg', 'jpg', 'png', 'gif')  # розширення файлів зображень
 DJU_IMG_USE_JPEGTRAN = getattr(settings, 'DJU_IMG_USE_JPEGTRAN', False)  # використання утиліти jpegtran (лише Linux)
+# використання утиліти convert (ImageMagick) (лише Linux)
+DJU_IMG_CONVERT_JPEG_TO_RGB = getattr(settings, 'DJU_IMG_CONVERT_JPEG_TO_RGB', False)
 
 
 # ------------
