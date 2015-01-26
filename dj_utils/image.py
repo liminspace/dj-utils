@@ -89,7 +89,7 @@ def _save_img(img, f, *args, **kwargs):
     if img.format == 'JPEG' and u_settings.DJU_IMG_USE_JPEGTRAN:
         f.seek(0)
         try:
-            p = subprocess.Popen(['jpegtran', '-copy none', '-optimize', '-progressive'],
+            p = subprocess.Popen(['jpegtran', '-copy', 'none', '-optimize', '-progressive'],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             r = p.communicate(f.read())[0]
         except IOError:
@@ -102,7 +102,7 @@ def _save_img(img, f, *args, **kwargs):
 def get_image_as_rgb(f):
     f.seek(0)
     try:
-        p = subprocess.Popen(['convert', '-colorspace rgb', '-', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.Popen(['convert', '-colorspace', 'rgb', '-', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         r = p.communicate(f.read())[0]
     except IOError:
         r = None
