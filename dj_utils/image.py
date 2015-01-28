@@ -110,6 +110,40 @@ def get_image_as_rgb(f):
         return Image.open(StringIO(r))
 
 
+def optimize_png_file(f, o=None):
+    """
+    Використовує утиліту pngquant для оптимізації картинки.
+    f - шлях до файлу або file-об'єкт
+    o - шлях до вихідного фафлу або file-об'єкт для збереження результату
+    * f і o не можуть бути різного типу
+    """
+    if isinstance(f, basestring):
+        if o is None:
+            o = f
+        else:
+            assert isinstance(o, basestring)
+        try:
+            subprocess.check_call(['pngquant', '--force', '--output', o, f])
+        except subprocess.CalledProcessError:
+            return False
+        return True
+    assert hasattr(f, 'read')
+    if o is None:
+        o = f
+    else:
+        assert hasattr(o, 'write')
+    f.seek(0)
+    try:
+        p = subprocess.Popen(['pngquant', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        r = p.communicate(f.read())[0]
+    except IOError:
+        r = None
+    if r:
+        truncate_file(o)
+        o.write(r)
+        return True
+
+
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
                  return_new_image=False, force_jpeg_save=True):
     """
