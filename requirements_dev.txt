@@ -1,7 +1,7 @@
 Django==1.7.3
 Pillow==2.7.0
 coverage==3.7.1
-django-localeurl==2.0.1
+django-localeurl==2.0.2
 django-modeltranslation==0.8
 django-redis==3.8.2
 pytz
