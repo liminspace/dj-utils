@@ -142,6 +142,7 @@ def optimize_png_file(f, o=None):
         truncate_file(o)
         o.write(r)
         return True
+    return False
 
 
 def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=False, stretch=False,
