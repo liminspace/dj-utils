@@ -11,10 +11,12 @@ from django.core.management.utils import handle_extensions
 APPS = ('dj_utils',)
 LANGUAGES = ('en', 'uk', 'ru', 'pl')
 
-COMMANDS_LIST = ('makemessages', 'compilemessages')
+COMMANDS_LIST = ('makemessages', 'compilemessages', 'testmanage', 'test')
 COMMANDS_INFO = {
     'makemessages': 'make po-files',
     'compilemessages': 'compile po-files to mo-files',
+    'testmanage': 'run manage for test project',
+    'test': 'run tests (eq. "testmanage test")'
 }
 
 GETTEXT_EXTENSIONS = {
@@ -95,10 +97,21 @@ def compilemessages(*args):
     CompilemessagesCommand.compilemessages()
 
 
+def testmanage(*args):
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(['manage.py'] + list(args))
+
+
+def test(*rgss):
+    testmanage('test')
+
+
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
+    if len(sys.argv) > 1 and sys.argv[1] in COMMANDS_LIST:
+        locals()[sys.argv[1]](*sys.argv[2:])
+    else:
         print 'Available commands:'
         for c in COMMANDS_LIST:
             print c + ' - ' + COMMANDS_INFO[c]
-    elif sys.argv[1] in COMMANDS_LIST:
-        locals()[sys.argv[1]](*sys.argv[2:])

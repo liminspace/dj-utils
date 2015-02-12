@@ -1,10 +1,10 @@
 # coding=utf-8
 from __future__ import absolute_import
-import unittest
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
 from StringIO import StringIO
 from django.core.files.uploadedfile import UploadedFile
+from django.test import TestCase
 from dj_utils.image import adjust_image, image_get_format, is_image
 
 
@@ -22,7 +22,7 @@ def get_img_file(img, img_format='JPEG', jpeg_quality=100):
     return f
 
 
-class TestAdjustImage(unittest.TestCase):
+class TestAdjustImage(TestCase):
     def setUp(self):
         self.img_200x200 = create_test_image(200, 200)
         self.img_300x300 = create_test_image(300, 300)
@@ -108,7 +108,7 @@ class TestAdjustImage(unittest.TestCase):
         self.assertIsInstance(adjust_image(self.f_200x200_jpeg, return_new_image=True), StringIO)
 
 
-class TestImageGetFormat(unittest.TestCase):
+class TestImageGetFormat(TestCase):
     def setUp(self):
         self.img_jpeg = get_img_file(create_test_image(100, 100))
         self.img_png = get_img_file(create_test_image(100, 100), img_format='PNG')
@@ -123,7 +123,7 @@ class TestImageGetFormat(unittest.TestCase):
         self.assertIsNone(image_get_format(StringIO('x' * 1000)))
 
 
-class TestIsImage(unittest.TestCase):
+class TestIsImage(TestCase):
     def setUp(self):
         self.img_jpeg = get_img_file(create_test_image(100, 100))
         self.img_png = get_img_file(create_test_image(100, 100), img_format='PNG')
