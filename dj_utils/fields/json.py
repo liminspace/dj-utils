@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
+import copy
 import datetime
 import simplejson
 from django.db import models
@@ -119,7 +120,7 @@ class JSONFieldBase(models.Field):
                 return self.default()
             if not isinstance(self.default, basestring):
                 return self.dumps_for_display(self.default)
-            return self.default
+            return copy.deepcopy(self.default)
         return super(JSONFieldBase, self).get_default()
 
 
