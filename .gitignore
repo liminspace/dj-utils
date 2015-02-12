@@ -54,3 +54,7 @@ target/
 
 # IDE
 .idea
+
+
+# db
+example/db.sqlite3
