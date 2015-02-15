@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import os
 import sys
+import subprocess
 from django.core.management.base import OutputWrapper
 from django.core.management.commands.makemessages import check_programs, Command as DjangoMakemessagesCommand
 from django.core.management.commands.compilemessages import Command as DjangoCompilemessagesCommand
@@ -11,12 +12,13 @@ from django.core.management.utils import handle_extensions
 APPS = ('dj_utils',)
 LANGUAGES = ('en', 'uk', 'ru', 'pl')
 
-COMMANDS_LIST = ('makemessages', 'compilemessages', 'testmanage', 'test')
+COMMANDS_LIST = ('makemessages', 'compilemessages', 'testmanage', 'test', 'release')
 COMMANDS_INFO = {
     'makemessages': 'make po-files',
     'compilemessages': 'compile po-files to mo-files',
     'testmanage': 'run manage for test project',
-    'test': 'run tests (eq. "testmanage test")'
+    'test': 'run tests (eq. "testmanage test")',
+    'release': 'make distributive and upload to pypi (setup.py sdist upload)'
 }
 
 GETTEXT_EXTENSIONS = {
@@ -106,6 +108,10 @@ def testmanage(*args):
 
 def test(*rgss):
     testmanage('test')
+
+
+def release(*args):
+    subprocess.call(['python', 'setup.py', 'sdist', 'upload'])
 
 
 if __name__ == '__main__':
