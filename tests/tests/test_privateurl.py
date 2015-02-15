@@ -109,7 +109,7 @@ class TestPrivateUrlView(TestCase):
     def tearDownClass(cls):
         super(TestPrivateUrlView, cls).tearDownClass()
         privateurl_ok.disconnect(dispatch_uid='ok')
-        privateurl_ok.disconnect(dispatch_uid='fail')
+        privateurl_fail.disconnect(dispatch_uid='fail')
 
     def test_receivers(self):
         t = PrivateUrl.create('test')
@@ -120,6 +120,13 @@ class TestPrivateUrlView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'fail')
         t.action = 'none'
+        response = self.client.get(t.get_absolute_url())
+        self.assertEqual(response.status_code, 404)
+
+    def test_receivers2(self):
+        t = PrivateUrl.create('test2')
+        response = self.client.get(t.get_absolute_url())
+        self.assertEqual(response.status_code, 302)
         response = self.client.get(t.get_absolute_url())
         self.assertEqual(response.status_code, 404)
 
