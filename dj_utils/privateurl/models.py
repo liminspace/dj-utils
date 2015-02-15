@@ -37,7 +37,7 @@ class PrivateUrl(models.Model):
         ordering = ('-created',)
         unique_together = ('action', 'token')
         verbose_name = _('private url')
-        verbose_name_plural = _('privete urls')
+        verbose_name_plural = _('private urls')
 
     @classmethod
     def create(cls, action, user=None, expire=None, data=None, used_limit=1, auto_delete=False, token_size=None):

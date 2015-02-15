@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 'ordering': ('-created',),
                 'db_table': 'dju_privateurl',
                 'verbose_name': 'private url',
-                'verbose_name_plural': 'privete urls',
+                'verbose_name_plural': 'private urls',
             },
             bases=(models.Model,),
         ),
