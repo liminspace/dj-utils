@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import copy
 import random
+import datetime
 from django.conf import settings
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
@@ -40,21 +41,28 @@ class PrivateUrl(models.Model):
         verbose_name_plural = _('private urls')
 
     @classmethod
-    def create(cls, action, user=None, expire=None, data=None, used_limit=1, auto_delete=False, token_size=None):
+    def create(cls, action, user=None, expire=None, data=None, used_limit=1, auto_delete=False, token_size=None,
+               replace=False):
         """
         Створює новий об'єкт PrivateUrl
         :param action: назва події (slug)
         :param user: user or None
-        :param expire: datetime or None
-        :param data: dict or None
-        :param used_limit: number (default 1)
-        :param auto_delete: bool (default False)
-        :param token_size: tuple (min, max) or number or None
+        :param expire: термін дії, datetime or timedelta or None
+        :param data: додаткові дані, dict or None
+        :param used_limit: обмеження по кількості використання, int
+        :param auto_delete: автовидалення, якщо посилання буде недійсне, bool
+        :param token_size: довжина токена, tuple (min, max) or number or None (=(40, 64))
+        :param replace: чи видаляти попередні посиланн для user та action, bool
         :return: new saved object
         """
-        max_tries, n = 20, 0
+        if replace and user:
+            with transaction.atomic():
+                cls.objects.filter(action=action, user=user).delete()
         if data:
             data = copy.deepcopy(data)
+        if isinstance(expire, datetime.timedelta):
+            expire = timezone.now() + expire
+        max_tries, n = 20, 0
         while True:
             try:
                 with transaction.atomic():

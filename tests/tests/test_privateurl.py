@@ -13,12 +13,21 @@ from dj_utils.privateurl.signals import privateurl_ok, privateurl_fail
 
 class TestPrivateUrl(TestCase):
     def test_manager_create(self):
-        t = PrivateUrl.create('test')
+        t = PrivateUrl.create('test', expire=datetime.timedelta(days=5))
         self.assertIsInstance(t, PrivateUrl)
         self.assertIsNotNone(t.pk)
         with self.assertRaises(RuntimeError):
             for i in xrange(100):
                 PrivateUrl.create('test', token_size=1)
+
+    def test_manager_create_with_replace(self):
+        PrivateUrl.create('test', replace=True)
+        PrivateUrl.create('test', replace=True)
+        self.assertEqual(PrivateUrl.objects.filter(action='test').count(), 2)
+        user = get_user_model().objects.create(username='test', email='test@mail.com', password='test')
+        PrivateUrl.create('test', user=user, replace=True)
+        PrivateUrl.create('test', user=user, replace=True)
+        self.assertEqual(PrivateUrl.objects.filter(action='test', user=user).count(), 1)
 
     def test_token_size(self):
         t = PrivateUrl.create('test', token_size=50)
