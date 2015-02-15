@@ -86,16 +86,20 @@ class PrivateUrl(models.Model):
         return True
 
     def used_counter_inc(self):
+        obj_is_exists = self.pk
         now = timezone.now()
         self.used_counter += 1
         if self.auto_delete and not self.is_available(dt=now):
-            return self.delete()
+            if obj_is_exists:
+                self.delete()
+            return
         uf = {'used_counter', 'last_used'}
         if not self.first_used:
             self.first_used = now
             uf.add('first_used')
         self.last_used = now
-        self.save(update_fields=uf)
+        if obj_is_exists:
+            self.save(update_fields=uf)
 
     @staticmethod
     def generate_token(size=None):
