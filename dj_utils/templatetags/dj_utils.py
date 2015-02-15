@@ -459,6 +459,11 @@ def full_url_prefix(secure=None):
     return mark_safe(full_url(secure=secure))
 
 
+@register.filter
+def add_full_url_prefix(value, arg=None):
+    return mark_safe(full_url(path=value, secure=arg))
+
+
 @register.assignment_tag(takes_context=True, name='get_urls_for_langs')
 def get_urls_for_langs_(context):
     """
