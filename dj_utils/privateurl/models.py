@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import copy
 import random
 from django.conf import settings
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext_lazy as _
@@ -14,33 +14,6 @@ from dj_utils.fields import JSONField
 class PrivateUrlManager(models.Manager):
     def get_or_none(self, action, token):
         return get_object_or_None(self.select_related('user'), action=action, token=token)
-
-    def add(self, action, user=None, expire=None, data=None, used_limit=1, auto_delete=False, token_size=None):
-        """
-        Створює новий об'єкт PrivateUrl
-        :param action: назва події (slug)
-        :param user: user or None
-        :param expire: datetime or None
-        :param data: dict or None
-        :param used_limit: number (default 1)
-        :param auto_delete: bool (default False)
-        :param token_size: tuple (min, max) or number or None
-        :return: new saved object
-        """
-        max_tries, n = 20, 0
-        if data:
-            data = copy.deepcopy(data)
-        while True:
-            try:
-                return self.create(user=user, action=action, token=self.model.generate_token(size=token_size),
-                                   expire=expire, data=data, used_limit=used_limit, auto_delete=auto_delete)
-            except IntegrityError:
-                n += 1
-                if n > max_tries:
-                    raise RuntimeError("It can't make PrivateUrl object (action={}, token_size={})".format(
-                        action, token_size
-                    ))
-                continue
 
 
 class PrivateUrl(models.Model):
@@ -65,6 +38,34 @@ class PrivateUrl(models.Model):
         unique_together = ('action', 'token')
         verbose_name = _('private url')
         verbose_name_plural = _('privete urls')
+
+    @classmethod
+    def create(cls, action, user=None, expire=None, data=None, used_limit=1, auto_delete=False, token_size=None):
+        """
+        Створює новий об'єкт PrivateUrl
+        :param action: назва події (slug)
+        :param user: user or None
+        :param expire: datetime or None
+        :param data: dict or None
+        :param used_limit: number (default 1)
+        :param auto_delete: bool (default False)
+        :param token_size: tuple (min, max) or number or None
+        :return: new saved object
+        """
+        max_tries, n = 20, 0
+        if data:
+            data = copy.deepcopy(data)
+        while True:
+            try:
+                with transaction.atomic():
+                    return cls.objects.create(user=user, action=action, token=cls.generate_token(size=token_size),
+                                              expire=expire, data=data, used_limit=used_limit, auto_delete=auto_delete)
+            except IntegrityError:
+                n += 1
+                if n > max_tries:
+                    raise RuntimeError("It can't make PrivateUrl object (action={}, token_size={})".format(
+                        action, token_size
+                    ))
 
     def is_available(self, dt=None):
         """
@@ -104,3 +105,7 @@ class PrivateUrl(models.Model):
             assert 0 < size <= 64
             _size = size
         return get_random_string(length=_size)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return 'dju_privateurl', (), {'action': self.action, 'token': self.token}
