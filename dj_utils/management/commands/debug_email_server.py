@@ -14,6 +14,11 @@ from dj_utils.settings import UTILS_EMAIL_DEBUG_PATH, UTILS_EMAIL_DEBUG_IN_CONSO
 
 
 class DebuggingServer(SMTPServer):
+    def __init__(self, *args, **kwargs):
+        SMTPServer.__init__(self, *args, **kwargs)
+        sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+        sys.stderr = codecs.getwriter('utf8')(sys.stderr)
+
     @staticmethod
     def _get_subject(data):
         subject_re = re.compile(ur'^Subject: (.+)$', re.IGNORECASE | re.U)

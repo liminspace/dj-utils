@@ -23,13 +23,14 @@ def resolve_url_ext(to, params_=None, anchor_=None, *args, **kwargs):
     return url
 
 
-def send_file(filepath, filename=None, content_type=None, encoding=None):
-    if filename is None:
-        filename = os.path.basename(filepath)
+def send_file(filepath, content_type=None, as_attachment=False, filename=None, encoding=None):
     if content_type is None:
         content_type, encoding = mimetypes.guess_type(filepath)
     response = HttpResponse(FileWrapper(file(filepath, 'rb')), content_type=content_type)
-    response['Content-Disposition'] = "attachment; filename*=UTF-8''%s" % urllib.quote(filename.encode('utf-8'))
+    if as_attachment:
+        if filename is None:
+            filename = os.path.basename(filepath)
+        response['Content-Disposition'] = "attachment; filename*=UTF-8''%s" % urllib.quote(filename.encode('utf-8'))
     response['Content-Length'] = os.stat(filepath).st_size
     if encoding is not None:
         response['Content-Encoding'] = encoding
