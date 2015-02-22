@@ -215,6 +215,6 @@ def adjust_image(f, max_size=(800, 800), new_format=None, jpeg_quality=90, fill=
         if isinstance(f, UploadedFile):
             f.seek(0, 2)
             f.size = f.tell()
-            f.content_type = 'image/%s' % new_format
+            f.content_type = 'image/%s' % img_format
             f.name = os.path.splitext(f.name)[0] + '.' + img_format
     return ch_size or ch_format
