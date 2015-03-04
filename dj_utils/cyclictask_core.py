@@ -30,7 +30,7 @@ class CyclicTaskBase(object):
         self.thread = None
 
     def task(self):
-        pass
+        raise NotImplementedError('subclasses of CyclicTaskBase must provide a task() method')
 
     def run(self):
         self.is_running = True

@@ -4,13 +4,13 @@ import simplejson
 from django import template
 from django.template.loader import get_template
 from django.http import QueryDict
-from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe, mark_for_escaping
 from django.utils.encoding import force_unicode
 from django.core.cache.utils import make_template_fragment_key
 from django.core.cache import cache
 from dj_utils import gravatar
 from dj_utils.tcache import cache_set
-from dj_utils.http import full_url, get_urls_for_langs
+from dj_utils.http import full_url
 from dj_utils.tools import long_number_readable
 from dj_utils.upload import make_thumb_url
 
@@ -36,7 +36,10 @@ def of_strkey(value, arg):
 
 @register.filter
 def of_index(value, arg):
-    return value[int(arg)]
+    try:
+        return value[int(arg)]
+    except (IndexError, TypeError, ValueError):
+        return ''
 
 
 @register.filter
@@ -51,14 +54,30 @@ def is_in(value, arg):
 
 
 @register.filter
-def items_val_sort_dict(value, arg=None):
+def dict_items_sort_by_val(value, arg=None):
+    """
+    Return items from dict which sorted by value.
+    {% for k, v in mydict|dict_items_sort_by_val %}
+        ...
+    {% endfor %}
+    """
+    if not isinstance(value, dict):
+        return ()
     items = value.items()
     items.sort(key=lambda t: t[1], reverse=bool(arg))
     return items
 
 
 @register.filter
-def items_key_sort_dict(value, arg=None):
+def dict_items_sort_by_key(value, arg=None):
+    """
+    Return items from dict which sorted by key.
+    {% for k, v in mydict|dict_items_sort_by_key %}
+        ...
+    {% endfor %}
+    """
+    if not isinstance(value, dict):
+        return ()
     items = value.items()
     items.sort(key=lambda t: t[0], reverse=bool(arg))
     return items
@@ -158,13 +177,16 @@ class RecurseNode(template.Node):
     def _render(self, context, item, level=1):
         t = []
         context.push()
+        children = ()
         if hasattr(item, self.children_attr):
-            children = getattr(item, self.children_attr)
+            children = getattr(item, self.children_attr, ())
             if callable(children):
                 children = children()
-        else:
-            children = item.get(self.children_attr)
-        for child in children:
+        elif hasattr(item, 'get'):
+            children = item.get(self.children_attr, ())
+            if callable(children):
+                children = children()
+        for child in children or ():
             t.append(self._render(context, child, level=level + 1))
         context['item'] = item
         context['subitems'] = mark_safe(''.join(t))
@@ -215,16 +237,13 @@ def humanize_long_number(value):
     return long_number_readable(value)
 
     
-@register.filter(is_safe=False)
-def subtract(value, arg):
+@register.filter
+def int_subtract(value, arg):
     """ Subtract the arg of the value. """
     try:
         return int(value) - int(arg)
     except (ValueError, TypeError):
-        try:
-            return value - arg
-        except TypeError:
-            return ''
+        return ''
 
 
 @register.assignment_tag
@@ -291,13 +310,13 @@ def paginator(context, page, leading=8, out=3, adjacent=3, sep='...'):
         'pages': pages,
         'is_paginated': is_paginated,
         'separator': sep,
-        'request': context['request'],
+        'request': context.get('request'),
         'param_name': page.param_name if hasattr(page, 'param_name') else 'page',
     }
 
 
 @register.filter
-def is_str(value, arg=None):
+def str_equal(value, arg=None):
     return force_unicode(value) == force_unicode(arg)
 
 
@@ -333,9 +352,6 @@ class CacheNode(template.Node):
     def render(self, context):
         try:
             expire_time = self.expire_time_var.resolve(context)
-        except template.VariableDoesNotExist:
-            raise template.TemplateSyntaxError('"tcache" tag got an unknown variable: %r' % self.expire_time_var.var)
-        try:
             expire_time = int(expire_time)
         except (ValueError, TypeError):
             raise template.TemplateSyntaxError('"tcache" tag got a non-integer timeout value: %r' % expire_time)
@@ -355,15 +371,11 @@ def tcache(parser, token):
     of time with support tags.
 
     Usage::
-
-        {% load tcache %}
         {% tcache [expire_time] [fragment_name] [tags='tag1,tag2'] %}
             .. some expensive processing ..
         {% endtcache %}
 
-    This tag also supports varying by a list of arguments::
-
-        {% load tcache %}
+    This tag also supports varying by a list of arguments:
         {% tcache [expire_time] [fragment_name] [var1] [var2] .. [tags=tags] %}
             .. some expensive processing ..
         {% endtcache %}
@@ -398,7 +410,7 @@ def gravatar_profile_url(value):
 
 
 def _url_get_amps(token=None):
-    l, r, amp = '', '', u'&amp;'
+    l, r, amp = '', '', '&'
     if token and len(token) > 1:
         token = token.strip()
         if token.startswith('&'):
@@ -410,30 +422,30 @@ def _url_get_amps(token=None):
 
 
 def _url_getvars(context, token_=None, type_=None):
+    assert type_ in (None, 'with', 'without')
+    request_get = getattr(context.get('request'), 'GET', QueryDict(''))
     token, l, r = _url_get_amps(token_)
     gv = ''
     if type_:
         w, wo = type_ == 'with', type_ == 'without'
-        if not w and not wo:
-            type_ = None
-        else:
+        if w or wo:
             lst = [p.strip() for p in token.split(',') if p.strip()]
             if w and not lst:
                 pass
             elif wo and not lst:
                 type_ = None
             else:
-                params, gets = QueryDict('', mutable=True), context['request'].GET
+                params = QueryDict('', mutable=True)
                 if w:
                     q = lambda x: x
                 else:
                     q = lambda x: not x
-                for key in gets:
+                for key in request_get:
                     if q(key in lst):
-                        params.setlist(key, gets.getlist(key))
+                        params.setlist(key, request_get.getlist(key))
                 gv = params.urlencode()
     if not type_:
-        gv = context['request'].GET.urlencode()
+        gv = request_get.urlencode()
     if gv:
         gv = l + gv + r
     return gv
@@ -441,38 +453,27 @@ def _url_getvars(context, token_=None, type_=None):
 
 @register.simple_tag(takes_context=True)
 def url_getvars(context, token=None):
-    return mark_safe(_url_getvars(context, token))
+    return mark_for_escaping(_url_getvars(context, token))
 
 
 @register.simple_tag(takes_context=True)
 def url_getvars_with(context, token):
-    return mark_safe(_url_getvars(context, token, 'with'))
+    return mark_for_escaping(_url_getvars(context, token, 'with'))
 
 
 @register.simple_tag(takes_context=True)
 def url_getvars_without(context, token):
-    return mark_safe(_url_getvars(context, token, 'without'))
+    return mark_for_escaping(_url_getvars(context, token, 'without'))
 
 
 @register.simple_tag
 def full_url_prefix(secure=None):
-    return mark_safe(full_url(secure=secure))
+    return full_url(secure=secure)
 
 
 @register.filter
 def add_full_url_prefix(value, arg=None):
     return mark_safe(full_url(path=value, secure=arg))
-
-
-@register.assignment_tag(takes_context=True, name='get_urls_for_langs')
-def get_urls_for_langs_(context):
-    """
-    Повертає словник з посиланням на дану сторінку для різних мов.
-    В контексті має бути request.
-    {% get_urls_for_langs as urls %}
-    {'en': '/about-us', 'uk': '/ua/pro-nas'}
-    """
-    return get_urls_for_langs(context['request'])
 
 
 @register.assignment_tag(name='make_thumb_url')

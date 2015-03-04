@@ -5,11 +5,9 @@ import os
 import urllib
 import urlparse
 import simplejson
-from django.utils import translation
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.core.servers.basehttp import FileWrapper
-from django.core.urlresolvers import resolve
 from dj_utils import settings as u_settings
 
 
@@ -89,47 +87,3 @@ def full_url(path=None, secure=None):
     if secure is None:
         secure = u_settings.USE_HTTPS
     return '%s://%s%s' % ((secure and 'https' or 'http'), u_settings.SITE_DOMAIN, path or '')
-
-
-def get_url_for_lang(request, lang):
-    """
-    Повертає посиланням на сторінку з request для мови lang.
-    """
-    assert lang in u_settings.LANGUAGES_CODES
-    current_lang = translation.get_language()
-    if lang != current_lang:
-        r = request.resolver_match
-        if r is None:
-            r = resolve(request.path)
-        translation.activate(lang)
-        kwargs = r.kwargs.copy()
-        kwargs['params_'] = request.GET
-        url = resolve_url_ext(r.view_name, *r.args, **kwargs)
-        translation.activate(current_lang)
-    else:
-        url = request.get_full_path()
-    return url
-
-
-def get_urls_for_langs(request):
-    """
-    Повертає словник з посиланням на дану сторінку для різних мов.
-    {'en': '/about-us', 'uk': '/ua/pro-nas'}
-    Повертає None, якщо в request немає resolver_match (тобто помилка на етапі process_request)
-    Якщо в url використовується slug, тоді дана функція з цим не справиться.
-    """
-    urls = {}
-    current_lang = translation.get_language()
-    r = request.resolver_match
-    if r is None:
-        return None
-    for lang in u_settings.LANGUAGES_CODES:
-        if lang != current_lang:
-            translation.activate(lang)
-            kwargs = r.kwargs.copy()
-            kwargs['params_'] = request.GET
-            urls[lang] = resolve_url_ext(r.view_name, *r.args, **kwargs)
-        else:
-            urls[lang] = request.get_full_path()
-    translation.activate(current_lang)
-    return urls

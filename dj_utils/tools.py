@@ -83,6 +83,13 @@ def parse_datetime_aware(s, tz=None):
     return timezone.make_aware(d, tz or timezone.get_current_timezone())
 
 
+_long_number_readable_formats = (
+    (10 ** 6, 10 ** 3, u'{:.0f}', u'{:.1f}', _(u'k.')),
+    (10 ** 9, 10 ** 6, u'{:.0f}', u'{:.2f}', _(u' mln.')),
+    (10 ** 12, 10 ** 9, u'{:.0f}', u'{:.3f}', _(u' bln.')),
+)
+
+
 def long_number_readable(value):
     """
     Convert big integer (>=999) to readable form.
@@ -91,17 +98,12 @@ def long_number_readable(value):
     1000000 => 1 mln.
     1258000 => 1.26 mln.
     """
-    assert isinstance(value, (int, long))
+    value = int(value)
     if value < 1000:
         return value
-    formats = (
-        (10 ** 6, 10 ** 3, u'%d', u'%.1f', _('k.')),
-        (10 ** 9, 10 ** 6, u'%d', u'%.2f', _(' mln.')),
-        (10 ** 12, 10 ** 9, u'%d', u'%.3f', _(' bln.')),
-    )
-    for m, d, inf, fnf, n in formats:
+    for m, d, inf, fnf, n in _long_number_readable_formats:
         if value < m:
-            return ((inf if value % d == 0 else fnf) + n) % (value / float(d))
+            return ((inf if value % d == 0 else fnf) + unicode(n)).format(value / float(d))
     return value
 
 

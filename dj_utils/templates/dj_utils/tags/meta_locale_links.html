@@ -1,6 +1,0 @@
-{% if langs_urls %}
-    <link rel="alternate" hreflang="x-default" href="{{ default_url }}">
-    {% for lang, url in langs_urls.iteritems %}
-        <link rel="alternate" hreflang="{{ lang }}" href="{{ url }}">
-    {% endfor %}
-{% endif %}
