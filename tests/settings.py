@@ -63,6 +63,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db.sqlite3'),
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'dju',
+        # 'USER': 'root',
+        # 'PASSWORD': '',
     }
 }
 
