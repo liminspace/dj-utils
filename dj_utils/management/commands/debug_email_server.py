@@ -83,5 +83,5 @@ class Command(BaseCommand):
         subprocess.call([
             sys.executable,
             '-m', 'smtpd', '-n', '-c', 'dj_utils.management.commands.debug_email_server.DebuggingServer',
-            'localhost:1025'
+            'localhost:10250'
         ])
