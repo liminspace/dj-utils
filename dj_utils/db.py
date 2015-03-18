@@ -35,4 +35,4 @@ def each_fields(for_fields, fields):
     for ff in for_fields:
         for f in fields:
             r.add(ff + '__' + f)
-    return r
+    return list(r)
