@@ -21,3 +21,18 @@ def chunked_qs(qs, chunksize=100):
     for start in xrange(0, total, chunksize):
         for t in qs[start:min(start + chunksize, total)]:
             yield t
+
+
+def each_fields(for_fields, fields):
+    """
+    select_related(
+        'field__related_field1__text1', 'field__related_field1__text2',
+        'field__related_field2__text1', 'field__related_field2__text2',
+    )
+    each_fields(['field__related_field1', 'field__related_field2'], ['text1', 'text2'])
+    """
+    r = set()
+    for ff in for_fields:
+        for f in fields:
+            r.add(ff + '__' + f)
+    return r
