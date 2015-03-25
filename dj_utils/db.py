@@ -16,11 +16,33 @@ def get_object_or_None(klass, *args, **kwargs):
         return None
 
 
-def chunked_qs(qs, chunksize=100):
-    total = qs.count()
-    for start in xrange(0, total, chunksize):
-        for t in qs[start:min(start + chunksize, total)]:
+def chunked_qs(qs, chunksize=1000):
+    start = 0
+    while True:
+        empty = True
+        for t in qs[start:(start + chunksize)]:
             yield t
+            empty = False
+        if empty:
+            break
+        start += chunksize
+
+
+def chunked_qs_by_field(qs, fieldname, chunksize=1000):
+    """
+    Буде зроблено кілька запитів, які будуть пагінуватись з допомогою фільтру
+    по числовому полю fieldname (значенням від 0 шматками chunksize)
+    """
+    start = 0
+    while True:
+        empty = True
+        f = {'{f}__gte'.format(f=fieldname): start, '{f}__lt'.format(f=fieldname): start + chunksize}
+        for t in qs.filter(**f):
+            yield t
+            empty = False
+        if empty:
+            break
+        start += chunksize
 
 
 def each_fields(for_fields, fields):
