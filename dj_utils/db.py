@@ -16,13 +16,19 @@ def get_object_or_None(klass, *args, **kwargs):
         return None
 
 
-def chunked_qs(qs, chunksize=1000):
+def chunked_qs(qs, chunksize=1000, yield_values=True):
     start = 0
     while True:
         empty = True
-        for t in qs[start:(start + chunksize)]:
-            yield t
-            empty = False
+        if yield_values:
+            for t in qs[start:(start + chunksize)]:
+                yield t
+                empty = False
+        else:
+            data = tuple(qs[start:(start + chunksize)])
+            yield data
+            if data:
+                empty = False
         if empty:
             break
         start += chunksize
