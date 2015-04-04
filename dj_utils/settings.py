@@ -30,7 +30,7 @@ SITE_DOMAIN = getattr(settings, 'SITE_DOMAIN', 'localhost')
 DOMAIN_TITLE = getattr(settings, 'DOMAIN_TITLE', SITE_DOMAIN)
 
 EMAIL_RETURN_PATH = getattr(settings, 'EMAIL_RETURN_PATH', None)
-EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)
+EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)  # list of emails
 
 EMAIL_DEFAULT_CONTEXT = getattr(settings, 'EMAIL_DEFAULT_CONTEXT', 'dj_utils.context_processors.email_default')
 

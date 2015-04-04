@@ -30,7 +30,7 @@ class Command(BaseCommand):
             elif f.unique:
                 unique_ix_fields.append([f])
         for ut in model._meta.unique_together:
-            unique_ix_fields.append([model._meta.get_field_by_name(f)[0] for f in ut])
+            unique_ix_fields.append([model._meta.get_field(f)[0] for f in ut])
         return unique_ix_fields
 
     def handle(self, *args, **options):

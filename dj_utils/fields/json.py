@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.timezone import is_aware
 from django.utils.translation import ugettext_lazy as _
 from django.forms.fields import CharField
-from django.forms.util import ValidationError
+from django.forms.utils import ValidationError
 
 
 JSON_INVALID = ValidationError(_('Enter valid JSON.'))

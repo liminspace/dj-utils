@@ -148,7 +148,10 @@ class IncludeNode(template.Node):
 
     def render(self, context):
         try:
-            included_template = get_template(self.template_name).render(context)
+            try:
+                included_template = context.template.engine.get_template(self.template_name).render(context)
+            except AttributeError:
+                included_template = get_template(self.template_name).render(context)
         except template.TemplateDoesNotExist:
             included_template = ''
         return included_template

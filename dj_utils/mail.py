@@ -20,15 +20,12 @@ def attach_html_wrapper(content, title=None, head=None):
 def send_mail(subject, body, to, from_email=None, reply_to=None,
               fail_silently=False, attach_alternative=None, attaches=None):
     headers = {}
-    if reply_to:
-        headers['Reply-To'] = reply_to
-    elif u_settings.EMAIL_REPLY_TO:
-        headers['Reply-To'] = u_settings.EMAIL_REPLY_TO
     if u_settings.EMAIL_RETURN_PATH:
         headers['Return-Path'] = u_settings.EMAIL_RETURN_PATH
     if settings.EMAIL_SUBJECT_PREFIX:
         subject = _(settings.EMAIL_SUBJECT_PREFIX) + subject
-    mail = EmailMultiAlternatives(subject=subject, body=body, from_email=from_email, to=to, headers=headers)
+    mail = EmailMultiAlternatives(subject=subject, body=body, from_email=from_email, to=to, headers=headers,
+                                  reply_to=(reply_to or u_settings.EMAIL_REPLY_TO or None))
     if attach_alternative:
         for attach in attach_alternative:
             mail.attach_alternative(*attach)
