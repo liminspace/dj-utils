@@ -1,7 +1,7 @@
 Django==1.8
 Pillow==2.8.1
 coverage==3.7.1
-django-modeltranslation==0.8.1
+django-modeltranslation==0.9
 django-redis==3.8.3
 mysql-python==1.2.5
 pytz

@@ -94,11 +94,11 @@ class RenderMailSender(object):
                 )
             if self._context:
                 self._context_instance.update(self._context)
+            self._context_instance.template = self._tpl.template
 
     def _render_template_block(self, name, nodes=None, extended_blocks=None):
         if nodes is None:
-            # self._tpl.render(self._context_instance)  # без цього теж працює
-            nodes = self._tpl.nodelist
+            nodes = self._tpl.template.nodelist
         if extended_blocks is None:
             extended_blocks = {}
         for node in nodes:
@@ -156,9 +156,9 @@ class RenderMailSender(object):
         if not isinstance(to, (list, tuple)):
             to = (to,)
         self._set_locale()
-        self._create_context_instance()
         try:
             self._load_tpl()
+            self._create_context_instance()
             attach_alternative = tuple(self._attach_alternative) if self._attach_alternative else ()
             attach_alternative += ((self._render('html'), 'text/html'),)
             return send_mail(self._render('subject'), self._plain_normalize(self._render('plain')), to,
