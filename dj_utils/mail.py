@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.template.loader_tags import BlockNode, ExtendsNode
 from django.conf import settings
 from django.utils import translation, timezone
-from django.utils.module_loading import import_by_path
+from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from dj_utils import settings as u_settings
 
@@ -24,6 +24,8 @@ def send_mail(subject, body, to, from_email=None, reply_to=None,
         headers['Return-Path'] = u_settings.EMAIL_RETURN_PATH
     if settings.EMAIL_SUBJECT_PREFIX:
         subject = _(settings.EMAIL_SUBJECT_PREFIX) + subject
+    if isinstance(to, basestring):
+        to = (to,)
     mail = EmailMultiAlternatives(subject=subject, body=body, from_email=from_email, to=to, headers=headers,
                                   reply_to=(reply_to or u_settings.EMAIL_REPLY_TO or None))
     if attach_alternative:
@@ -90,7 +92,7 @@ class RenderMailSender(object):
                 self._context_instance = RequestContext(self._request)
             else:
                 self._context_instance = Context(
-                    import_by_path(u_settings.EMAIL_DEFAULT_CONTEXT)() if u_settings.EMAIL_DEFAULT_CONTEXT else None
+                    import_string(u_settings.EMAIL_DEFAULT_CONTEXT)() if u_settings.EMAIL_DEFAULT_CONTEXT else None
                 )
             if self._context:
                 self._context_instance.update(self._context)

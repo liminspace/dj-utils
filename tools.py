@@ -102,12 +102,14 @@ def compilemessages(*args):
 def testmanage(*args):
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tests'))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tests', 'tests'))
     from django.core.management import execute_from_command_line
     execute_from_command_line(['manage.py'] + list(args))
 
 
-def test(*rgss):
-    testmanage('test')
+def test(*args):
+    testmanage('test', *args)
 
 
 def release(*args):

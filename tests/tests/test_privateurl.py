@@ -95,6 +95,7 @@ class TestPrivateUrlView(TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestPrivateUrlView, cls).setUpClass()
+
         @receiver(privateurl_ok, weak=False, dispatch_uid='ok')
         def ok(request, obj, action, **kwargs):
             if action == 'test':
@@ -134,6 +135,7 @@ class TestPrivateUrlView(TestCase):
 class TestPrivateUrlAdmin(TestCase):
     @classmethod
     def setUpClass(cls):
+        super(TestPrivateUrlAdmin, cls).setUpClass()
         PrivateUrl.create('test')
         get_user_model().objects.create_superuser('admin', 'admin@site.com', 'admin')
 
