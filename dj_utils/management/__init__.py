@@ -33,10 +33,12 @@ class LoggingBaseCommand(BaseCommand):
                 msg += f_ending
             f.write(msg.encode('utf8'))
 
-    def log_err(self, msg, add_time=True, out=None, double_br=False, ending=None):
+    def log_err(self, msg, add_time=True, out=None, double_br=False, ending=None, std_stream=None):
+        if std_stream is None:
+            std_stream = self.stderr
         if out is None:
             out = self.log_err_out_enabled
-        self.log(msg, add_time=add_time, out=out, double_br=double_br, ending=ending, std_stream=self.stderr,
+        self.log(msg, add_time=add_time, out=out, double_br=double_br, ending=ending, std_stream=std_stream,
                  is_error=True)
 
     def get_log_fn(self, is_error=False):
