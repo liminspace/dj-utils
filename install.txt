@@ -1,14 +1,20 @@
 Install pngquant on debian
 ==========================
 # su
-# apt-get install libpng-dev
+# aptitude install libpng-dev liblcms2-dev
 # cd /tmp
 # wget https://github.com/pornel/pngquant/archive/master.zip
 # unzip master.zip
 # cd pngquant-master
-# make
+# ./configure --with-lcms2 && make
 # make install
 # cd ..
 # rm master.zip
 # rm -rf pngquant-master
+# todo сімлінк точно треба?
 # ln -s /usr/local/bin/pngquant /bin/pngquant
+
+
+Install jpegtran on debian
+==========================
+# aptitude install libjpeg-progs

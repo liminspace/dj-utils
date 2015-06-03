@@ -55,6 +55,5 @@ target/
 # IDE
 .idea
 
-
 # db
 tests/db.sqlite3

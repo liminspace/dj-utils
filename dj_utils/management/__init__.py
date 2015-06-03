@@ -12,19 +12,24 @@ class LoggingBaseCommand(BaseCommand):
     log_fn = None
     log_dir = u_settings.LOG_DIR
 
-    def log(self, msg, add_time=True, stdout=True, double_br=False, ending=None):
+    def log(self, msg, add_time=True, out=True, double_br=False, ending=None, std_stream=None):
+        if std_stream is None:
+            std_stream = self.stdout
         msg = force_unicode(msg, errors='replace')
         if double_br:
             msg += '\n\n'
         if add_time:
             msg = u'[%s] %s' % (datetime.datetime.now().strftime(u'%d.%m.%Y %H:%M:%S'), msg)
-        if stdout:
-            self.stdout.write(msg, ending=ending)
+        if out:
+            std_stream.write(msg, ending=ending)
         with open(os.path.join(self.log_dir, self.get_log_fn()).replace('\\', '/'), 'a') as f:
             f_ending = '\n' if ending is None else ending
             if f_ending and not msg.endswith(f_ending):
                 msg += f_ending
             f.write(msg.encode('utf8'))
+
+    def log_err(self, msg, add_time=True, out=True, double_br=False, ending=None):
+        self.log(msg, add_time=add_time, out=out, double_br=double_br, ending=ending, std_stream=self.stderr)
 
     def get_log_fn(self):
         if self.log_fn is None:

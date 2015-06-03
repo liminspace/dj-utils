@@ -1,9 +1,12 @@
-Django==1.8
+# win
+# easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win32-py2.7.exe
+
+Django==1.8.2
 Pillow==2.8.1
 coverage==3.7.1
-django-modeltranslation==0.9
-django-redis==3.8.3
+django-modeltranslation==0.9.1
+django-redis==4.0.0
 mysql-python==1.2.5
 pytz
 redis==2.10.3
-simplejson==3.6.5
+simplejson==3.7.3
