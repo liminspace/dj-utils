@@ -18,3 +18,8 @@ Install pngquant on debian
 Install jpegtran on debian
 ==========================
 # aptitude install libjpeg-progs
+
+
+Install ImageMagic
+==================
+# aptitude install imagemagick
