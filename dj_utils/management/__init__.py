@@ -1,8 +1,8 @@
 # coding=utf-8
-from __future__ import absolute_import
 import datetime
 import inspect
 import os
+from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils.encoding import force_unicode
 from dj_utils import settings as u_settings
@@ -12,8 +12,8 @@ class LoggingBaseCommand(BaseCommand):
     log_fn = None
     log_err_fn = None
     log_dir = u_settings.LOG_DIR
-    log_out_enabled = True
-    log_err_out_enabled = True
+    log_out_enabled = settings.DEBUG
+    log_err_out_enabled = settings.DEBUG
 
     def log(self, msg, add_time=True, out=None, double_br=False, ending=None, std_stream=None, is_error=False):
         if std_stream is None:

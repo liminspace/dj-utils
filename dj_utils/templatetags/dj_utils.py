@@ -271,8 +271,6 @@ def assign_format_str(string, *args, **kwargs):
 
 @register.filter
 def tojson(value):
-    if callable(value):
-        value = value()
     return simplejson.dumps(value)
 
 
