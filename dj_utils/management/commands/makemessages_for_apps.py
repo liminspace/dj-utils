@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 command.extend(['-d', domain])
                 if not extensions:
                     if domain == 'django':
-                        extensions = ['html', 'txt', 'rml']
+                        extensions = ['html', 'txt', 'rml', 'py']
                     elif domain == 'djangojs':
                         extensions = ['js']
                 if extensions:

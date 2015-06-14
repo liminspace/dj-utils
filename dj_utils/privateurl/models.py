@@ -4,6 +4,7 @@ import copy
 import random
 import datetime
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -118,6 +119,5 @@ class PrivateUrl(models.Model):
             _size = size
         return get_random_string(length=_size)
 
-    @models.permalink
     def get_absolute_url(self):
-        return 'dju_privateurl', (), {'action': self.action, 'token': self.token}
+        return reverse('dju_privateurl', kwargs={'action': self.action, 'token': self.token})
