@@ -57,8 +57,11 @@ def each_fields(for_fields, fields):
         'field__related_field1__text1', 'field__related_field1__text2',
         'field__related_field2__text1', 'field__related_field2__text2',
     )
-    each_fields(['field__related_field1', 'field__related_field2'], ['text1', 'text2'])
+    select_related(*each_fields(['field__related_field1', 'field__related_field2'], ['text1', 'text2']))
+    each_fields('field__related_field1', ['text1', 'text2'])
     """
+    if isinstance(for_fields, basestring):
+        for_fields = (for_fields,)
     r = set()
     for ff in for_fields:
         for f in fields:
