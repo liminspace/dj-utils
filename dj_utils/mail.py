@@ -100,7 +100,6 @@ class RenderMailSender(object):
                 )
             if self._context:
                 self._context_instance.update(self._context)
-            self._context_instance.template = self._tpl.template
 
     def _render_template_block(self, name, nodes=None, extended_blocks=None):
         if nodes is None:
@@ -130,7 +129,11 @@ class RenderMailSender(object):
 
     def _render(self, name):
         if name not in self._render_cache:
-            self._render_cache[name] = self._render_template_block(name).strip()
+            if self._context_instance is not None:
+                with self._context_instance.bind_template(self._tpl.template):
+                    self._render_cache[name] = self._render_template_block(name).strip()
+            else:
+                self._render_cache[name] = self._render_template_block(name).strip()
         return self._render_cache[name]
 
     @classmethod
