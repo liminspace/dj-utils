@@ -93,3 +93,26 @@ EMAIL_SUBJECT_PREFIX = '[Django test] '
 EMAIL_RETURN_PATH = 'return.path@mail.com'
 
 SITE_DOMAIN = 'dj-utils.test'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # 'DIRS': (os.path.join(BASE_DIR, 'templates'),),
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': (
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.template.context_processors.request',
+                'django.template.context_processors.csrf',
+                'tests.context_processors.static',
+            ),
+        },
+    },
+]
+
+EMAIL_DEFAULT_CONTEXT = 'tests.context_processors.static'
