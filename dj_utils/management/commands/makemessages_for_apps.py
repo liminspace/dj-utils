@@ -5,7 +5,6 @@ import os
 import subprocess
 import errno
 from copy import copy
-from optparse import make_option
 from django.core.management import BaseCommand, CommandError
 from django.conf import settings
 from django.apps.registry import apps as project_apps
@@ -13,19 +12,20 @@ from django.apps.registry import apps as project_apps
 
 class Command(BaseCommand):
     help = 'Make locale .po files for applications of project.'
-    option_list = (
-        make_option('--application', '-a', action='append', dest='apps', default=[], metavar='APPNAME',
-                    help='The application name. If not set then using all project app. '
-                         '(Project locale named ".")'),
-        make_option('--locale', '-l', action='append', dest='locale', default=None,
-                    help='Creates or updates the message files for the given locale(s) (e.g. pt_BR). '
-                         'Can be used multiple times, accepts a comma-separated list of locale names.'),
-        make_option('--domain', '-d', action='append', dest='domain', default=None,
-                    help='The domain of the message files (default: ["django", "djangojs"]).'),
-        make_option('--extension', '-e', action='append', dest='extensions', default=None,
-                    help='The file extension(s) to examine (default: "html,txt,rml", or "js" if the domain is '
-                         '"djangojs"). Separate multiple extensions with commas, or use -e multiple times.'),
-    ) + BaseCommand.option_list
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--application', '-a', action='append', dest='apps', default=[], metavar='APPNAME',
+                            help='The application name. If not set then using all project app. '
+                                 '(Project locale named ".")')
+        parser.add_argument('--locale', '-l', action='append', dest='locale', default=None,
+                            help='Creates or updates the message files for the given locale(s) (e.g. pt_BR). '
+                                 'Can be used multiple times, accepts a comma-separated list of locale names.')
+        parser.add_argument('--domain', '-d', action='append', dest='domain', default=None,
+                            help='The domain of the message files (default: ["django", "djangojs"]).')
+        parser.add_argument('--extension', '-e', action='append', dest='extensions', default=None,
+                            help='The file extension(s) to examine (default: "html,txt,rml", or "js" if the domain is '
+                                 '"djangojs"). Separate multiple extensions with commas, or use -e multiple times.')
 
     def _get_paths_of_apps(self, apps):
         result = []

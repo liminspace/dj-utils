@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import absolute_import
-from optparse import make_option
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
@@ -29,16 +28,16 @@ def get_apps_list(apps, external_apps):
 class Command(BaseCommand):
     help = 'Prints the drop ALL index and foreign key statements for tables from apps.'
 
-    option_list = BaseCommand.option_list + (
-        make_option('--database',  action='store', dest='database', default=DEFAULT_DB_ALIAS,
-                    help='Database that will be used. Defaults to the "default" database.'),
-        make_option('--application', '-a', action='append', dest='apps', default=[], metavar='APPNAME',
-                    help='The application name. If not set then using all project app (without external apps).'),
-        make_option('--external-apps', action='store_true', dest='external_apps',
-                    help='Include all external applications in the project.'),
-        make_option('--info', '-i', action='store_true', dest='info',
-                    help='Prints comments about application name and model name.'),
-    )
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--database',  action='store', dest='database', default=DEFAULT_DB_ALIAS,
+                            help='Database that will be used. Defaults to the "default" database.')
+        parser.add_argument('--application', '-a', action='append', dest='apps', default=[], metavar='APPNAME',
+                            help='The application name. If not set then using all project app (without external apps).')
+        parser.add_argument('--external-apps', action='store_true', dest='external_apps',
+                            help='Include all external applications in the project.')
+        parser.add_argument('--info', '-i', action='store_true', dest='info',
+                            help='Prints comments about application name and model name.')
 
     @classmethod
     def _get_fks(cls, conn, table):

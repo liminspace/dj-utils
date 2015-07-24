@@ -1,21 +1,21 @@
 # coding=utf-8
 from __future__ import absolute_import
-from optparse import make_option
-from django.core.management import CommandError, BaseCommand
+from django.core.management import CommandError
 from dj_utils.management import LoggingBaseCommand
 from dj_utils.upload import remove_old_tmp_files
 
 
 class Command(LoggingBaseCommand):
     help = 'Remove old temporary uploaded files.'
-    option_list = (
-        make_option('-d', '--dir', action='append', dest='dirs', default=[],
-                    help='Path to directory with files which need to clean.'),
-        make_option('-m', '--max-lifetime', action='store', type='int', dest='max_lifetime', default=168,
-                    help='Time of life file in hours. Default: 168 (7 days)'),
-        make_option('-r', '--recursive', action='store_true', dest='recursive', default=False,
-                    help='Using recursive scan.'),
-    ) + BaseCommand.option_list
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('-d', '--dir', action='append', dest='dirs', default=[],
+                            help='Path to directory with files which need to clean.')
+        parser.add_argument('-m', '--max-lifetime', action='store', type='int', dest='max_lifetime', default=168,
+                            help='Time of life file in hours. Default: 168 (7 days)')
+        parser.add_argument('-r', '--recursive', action='store_true', dest='recursive', default=False,
+                            help='Using recursive scan.')
 
     def handle(self, *args, **options):
         if not options['dirs']:
