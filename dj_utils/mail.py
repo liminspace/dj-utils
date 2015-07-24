@@ -26,8 +26,12 @@ def send_mail(subject, body, to, from_email=None, reply_to=None,
         subject = _(settings.EMAIL_SUBJECT_PREFIX) + subject
     if isinstance(to, basestring):
         to = (to,)
+    if reply_to is None:
+        reply_to = u_settings.EMAIL_REPLY_TO or None
+    if isinstance(reply_to, basestring):
+        reply_to = [reply_to]
     mail = EmailMultiAlternatives(subject=subject, body=body, from_email=from_email, to=to, headers=headers,
-                                  reply_to=(reply_to or u_settings.EMAIL_REPLY_TO or None))
+                                  reply_to=reply_to)
     if attach_alternative:
         for attach in attach_alternative:
             mail.attach_alternative(*attach)
