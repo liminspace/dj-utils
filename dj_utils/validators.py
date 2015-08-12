@@ -18,14 +18,6 @@ def validate_email_domain(email):
             raise ValidationError(_(u'Email with domain "%s" is disallowed.') % domain)
 
 
-validate_email_endpoint = RegexValidator(  # Валідація мейлу на наявність крапки вкінці.
-    r'^.+[^\.]$',
-    ugettext_lazy('Enter a valid email address.'),
-    'invalid',
-    flags=re.IGNORECASE
-)
-
-
 validate_phone_number12 = RegexValidator(  # Валідація номеру телефону в форматі +XX XXX XXXXXXX.
     r'^\+[\d]{12}$',
     ugettext_lazy('Phone number must be in +XX XXX XXXXXXX format.'),
