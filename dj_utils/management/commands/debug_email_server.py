@@ -78,8 +78,10 @@ class Command(BaseCommand):
     help = 'Run debug smtp server'
 
     def handle(self, *args, **options):
+        env = os.environ.copy()
+        env['PYTHONPATH'] = ':'.join(sys.path)
         subprocess.call([
             sys.executable,
             '-m', 'smtpd', '-n', '-c', 'dj_utils.management.commands.debug_email_server.DebuggingServer',
             'localhost:10250'
-        ])
+        ], env=env)
