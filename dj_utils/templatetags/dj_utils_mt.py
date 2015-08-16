@@ -1,10 +1,8 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django import template
 from django.conf import settings
 from django.utils import html
 from django.utils.safestring import mark_safe
-from dj_utils.settings import LANGUAGES_CODES
+from dj_utils.settings import LANGUAGE_CODES
 
 
 register = template.Library()
@@ -46,7 +44,7 @@ register = template.Library()
 @register.filter
 def get_mt_fields(value, arg):
     base_field, n = value[arg], 0
-    for lang in LANGUAGES_CODES:
+    for lang in LANGUAGE_CODES:
         try:
             field = value['%s_%s' % (arg, lang)]
             field.data_attrs = mark_safe(
@@ -63,7 +61,7 @@ def get_mt_fields(value, arg):
             n += 1
         if field is not None:
             yield field
-    if n == len(LANGUAGES_CODES):
+    if n == len(LANGUAGE_CODES):
         yield base_field
 
 

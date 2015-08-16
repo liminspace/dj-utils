@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 import datetime
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse

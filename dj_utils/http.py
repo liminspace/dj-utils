@@ -1,14 +1,13 @@
-# coding=utf-8
-from __future__ import absolute_import
 import mimetypes
 import os
 import urllib
 import urlparse
 import simplejson
+from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.core.servers.basehttp import FileWrapper
-from dj_utils import settings as u_settings
+from . import settings as u_settings
 
 
 def resolve_url_ext(to, params_=None, anchor_=None, *args, **kwargs):
@@ -86,4 +85,5 @@ def add_response_headers(h):
 def full_url(path=None, secure=None):
     if secure is None:
         secure = u_settings.USE_HTTPS
-    return '%s://%s%s' % ((secure and 'https' or 'http'), u_settings.SITE_DOMAIN, path or '')
+    site = Site.objects.get_current()
+    return '%s://%s%s' % ((secure and 'https' or 'http'), site.domain, path or '')

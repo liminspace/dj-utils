@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
 from StringIO import StringIO

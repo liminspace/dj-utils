@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 from dj_utils import cyclictask_core
 from dj_utils.management import LoggingBaseCommand
 

@@ -1,8 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.contrib import admin
-from dj_utils.privateurl.models import PrivateUrl
 from django.utils.translation import gettext, ugettext_lazy as _
+from .models import PrivateUrl
 
 
 class PrivateUrlAdmin(admin.ModelAdmin):

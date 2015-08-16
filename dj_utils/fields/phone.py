@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 import re
 from django import forms
 from django.db import models

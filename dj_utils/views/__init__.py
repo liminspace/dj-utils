@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.http.response import HttpResponseBase
 from django.views.generic import TemplateView
 from dj_utils.http import send_json

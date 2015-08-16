@@ -1,10 +1,8 @@
 # coding=utf-8
-from __future__ import absolute_import
-import re
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy, ugettext as _
-from dj_utils import settings as u_settings
+from . import settings as u_settings
 
 
 def validate_email_domain(email):
@@ -14,7 +12,7 @@ def validate_email_domain(email):
     except IndexError:
         pass
     else:
-        if domain.lower() in u_settings.EMAIL_DOMAIN_BLACK_LIST:
+        if domain.lower() in u_settings.DJU_EMAIL_DOMAIN_BLACK_LIST:
             raise ValidationError(_(u'Email with domain "%s" is disallowed.') % domain)
 
 

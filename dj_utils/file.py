@@ -1,5 +1,4 @@
 # coding=utf-8
-from __future__ import absolute_import
 import os
 from StringIO import StringIO
 from django.core.files.uploadedfile import InMemoryUploadedFile

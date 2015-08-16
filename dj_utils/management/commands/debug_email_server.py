@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 import codecs
 import sys
 import os
@@ -10,7 +8,7 @@ import subprocess
 from smtpd import SMTPServer
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_unicode
-from dj_utils.settings import UTILS_EMAIL_DEBUG_PATH, UTILS_EMAIL_DEBUG_IN_CONSOLE, UTILS_EMAIL_DEBUG_IN_FILES
+from dj_utils.settings import DJU_EMAIL_DEBUG_PATH, DJU_EMAIL_DEBUG_IN_CONSOLE, DJU_EMAIL_DEBUG_IN_FILES
 
 
 class DebuggingServer(SMTPServer):
@@ -37,15 +35,15 @@ class DebuggingServer(SMTPServer):
     @staticmethod
     def _get_fn(fn_base, n=None):
         if n is None:
-            return os.path.join(UTILS_EMAIL_DEBUG_PATH, u'{}.eml'.format(fn_base)).replace('\\', '/')
+            return os.path.join(DJU_EMAIL_DEBUG_PATH, u'{}.eml'.format(fn_base)).replace('\\', '/')
         else:
-            return os.path.join(UTILS_EMAIL_DEBUG_PATH, u'{}_{}.eml'.format(fn_base, n)).replace('\\', '/')
+            return os.path.join(DJU_EMAIL_DEBUG_PATH, u'{}_{}.eml'.format(fn_base, n)).replace('\\', '/')
 
     def process_message(self, peer, mailfrom, rcpttos, data):
         try:
-            if UTILS_EMAIL_DEBUG_IN_FILES:
-                if not os.path.exists(UTILS_EMAIL_DEBUG_PATH):
-                    os.makedirs(UTILS_EMAIL_DEBUG_PATH)
+            if DJU_EMAIL_DEBUG_IN_FILES:
+                if not os.path.exists(DJU_EMAIL_DEBUG_PATH):
+                    os.makedirs(DJU_EMAIL_DEBUG_PATH)
                 fn_base = u'{}_{}_{}_{}'.format(
                     u'_'.join(rcpttos),
                     self._get_subject(data),
@@ -62,15 +60,15 @@ class DebuggingServer(SMTPServer):
             inheaders = 1
             for line in data.split('\n'):
                 if inheaders and not line:
-                    if UTILS_EMAIL_DEBUG_IN_FILES:
+                    if DJU_EMAIL_DEBUG_IN_FILES:
                         f.write(u'X-Peer: {}\n'.format(force_unicode(peer[0])))
-                    if UTILS_EMAIL_DEBUG_IN_CONSOLE:
+                    if DJU_EMAIL_DEBUG_IN_CONSOLE:
                         print u'X-Peer: {}'.format(force_unicode(peer[0]))
                     inheaders = 0
                 line = force_unicode(line)
-                if UTILS_EMAIL_DEBUG_IN_FILES:
+                if DJU_EMAIL_DEBUG_IN_FILES:
                     f.write(u'{}\n'.format(line))
-                if UTILS_EMAIL_DEBUG_IN_CONSOLE:
+                if DJU_EMAIL_DEBUG_IN_CONSOLE:
                     print line
         except Exception, e:
             print 'DebuggingServer error: {}'.format(force_unicode(e))

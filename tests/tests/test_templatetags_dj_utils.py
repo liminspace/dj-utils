@@ -1,6 +1,5 @@
-# coding=utf-8
-from __future__ import absolute_import
 import time
+from django.contrib.sites.models import Site
 from django.core.paginator import Paginator
 from django.http import QueryDict
 from django.template import Template, Context, TemplateSyntaxError
@@ -418,15 +417,15 @@ class TestTemplatetagsDjUtils(TestCase):
 
     def test_gravatar_ava_url(self):
         r = '{scheme}://www.gravatar.com/avatar/903e415f53009aef5c2c3c1330ec74da?s={s}&amp;r={r}&amp;d={d}'
-        scheme = (u_settings.GRAVATAR_SECURE and 'https' or 'http')
+        scheme = (u_settings.DJU_GRAVATAR_SECURE and 'https' or 'http')
 
         t = self.get_tpl_f('{{ var|gravatar_ava_url }}', {'var': 'liminspace@gmail.com'})
-        self.assertEqual(t(), r.format(scheme=scheme, s=u_settings.GRAVATAR_DEFAULT_SIZE,
-                                       r=u_settings.GRAVATAR_RATING, d=u_settings.GRAVATAR_DEFAULT_IMAGE))
+        self.assertEqual(t(), r.format(scheme=scheme, s=u_settings.DJU_GRAVATAR_DEFAULT_SIZE,
+                                       r=u_settings.DJU_GRAVATAR_RATING, d=u_settings.DJU_GRAVATAR_DEFAULT_IMAGE))
 
         t = self.get_tpl_f('{{ var|gravatar_ava_url:100 }}', {'var': 'liminspace@gmail.com'})
-        self.assertEqual(t(), r.format(scheme=scheme, s=100, r=u_settings.GRAVATAR_RATING,
-                                       d=u_settings.GRAVATAR_DEFAULT_IMAGE))
+        self.assertEqual(t(), r.format(scheme=scheme, s=100, r=u_settings.DJU_GRAVATAR_RATING,
+                                       d=u_settings.DJU_GRAVATAR_DEFAULT_IMAGE))
 
     def test_gravatar_profile_url(self):
         t = self.get_tpl_f('{{ var|gravatar_profile_url }}', {'var': 'liminspace@gmail.com'})
@@ -460,7 +459,7 @@ class TestTemplatetagsDjUtils(TestCase):
         self.assertEqual(QueryDict(t()), QueryDict('a=1&b=2&b=3&c=4'))
 
     def test_full_url_prefix(self):
-        r = '{scheme}://' + u_settings.SITE_DOMAIN
+        r = '{scheme}://' + Site.objects.get_current().domain
 
         t = self.get_tpl_f('{% full_url_prefix %}')
         self.assertEqual(t(), r.format(scheme=(u_settings.USE_HTTPS and 'https' or 'http')))
@@ -472,7 +471,7 @@ class TestTemplatetagsDjUtils(TestCase):
         self.assertEqual(t(), r.format(scheme='https'))
 
     def test_add_full_url_prefix(self):
-        r = '{scheme}://' + u_settings.SITE_DOMAIN
+        r = '{scheme}://' + Site.objects.get_current().domain
 
         t = self.get_tpl_f('{{ var|add_full_url_prefix }}', {'var': '/test.html'})
         self.assertEqual(t(), r.format(scheme=(u_settings.USE_HTTPS and 'https' or 'http')) + '/test.html')

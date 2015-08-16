@@ -1,5 +1,4 @@
 # coding=utf-8
-from __future__ import absolute_import
 import copy
 import glob
 import os
@@ -7,9 +6,9 @@ import re
 import datetime
 from django.conf import settings
 from django.utils.crypto import get_random_string
-from dj_utils import settings as u_settings
-from dj_utils.image import image_get_format, is_image, adjust_image
-from dj_utils.tools import datetime_to_dtstr, dtstr_to_datetime
+from . import settings as u_settings
+from .image import image_get_format, is_image, adjust_image
+from .tools import datetime_to_dtstr, dtstr_to_datetime
 
 
 def get_profile_configs(profile):

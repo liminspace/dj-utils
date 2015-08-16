@@ -1,8 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.http.response import Http404, HttpResponseRedirect
-from dj_utils.privateurl.models import PrivateUrl
-from dj_utils.privateurl.signals import privateurl_ok, privateurl_fail
+from .models import PrivateUrl
+from .signals import privateurl_ok, privateurl_fail
 
 
 def privateurl_view(request, action, token):

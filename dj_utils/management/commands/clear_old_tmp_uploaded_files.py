@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.core.management import CommandError
 from dj_utils.management import LoggingBaseCommand
 from dj_utils.upload import remove_old_tmp_files

@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 import re
 from django.core.mail import EmailMultiAlternatives
 from django.template import RequestContext
@@ -10,7 +8,7 @@ from django.conf import settings
 from django.utils import translation, timezone
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
-from dj_utils import settings as u_settings
+from . import settings as u_settings
 
 
 def attach_html_wrapper(content, title=None, head=None):
@@ -95,8 +93,9 @@ class RenderMailSender(object):
             if self._request:
                 self._context_instance = RequestContext(self._request)
             else:
+                dc = u_settings.DJU_EMAIL_DEFAULT_CONTEXT
                 self._context_instance = Context(
-                    import_string(u_settings.EMAIL_DEFAULT_CONTEXT)() if u_settings.EMAIL_DEFAULT_CONTEXT else None
+                    import_string(dc)() if dc else None
                 )
             if self._context:
                 self._context_instance.update(self._context)

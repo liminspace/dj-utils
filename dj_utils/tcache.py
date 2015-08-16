@@ -1,6 +1,4 @@
 # coding=utf-8
-# support django 1.6.5
-from __future__ import absolute_import
 from types import NoneType
 from django.core.cache import cache as default_cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT

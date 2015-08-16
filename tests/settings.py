@@ -26,12 +26,12 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-# Application definition
+SITE_ID = 1
 
 INSTALLED_APPS = (
     'dj_utils',
     'dj_utils.privateurl',
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -92,8 +92,6 @@ STATIC_URL = '/static/'
 EMAIL_SUBJECT_PREFIX = '[Django test] '
 EMAIL_RETURN_PATH = 'return.path@mail.com'
 
-SITE_DOMAIN = 'dj-utils.test'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -115,4 +113,4 @@ TEMPLATES = [
     },
 ]
 
-EMAIL_DEFAULT_CONTEXT = 'tests.context_processors.static'
+DJU_EMAIL_DEFAULT_CONTEXT = 'tests.context_processors.static'

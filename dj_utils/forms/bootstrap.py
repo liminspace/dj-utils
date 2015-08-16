@@ -1,7 +1,5 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django import forms
-from dj_utils.forms.helpers import add_css_class_to_fields_widget
+from .helpers import add_css_class_to_fields_widget
 
 
 class BootstrapForm(forms.Form):

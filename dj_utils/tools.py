@@ -1,5 +1,4 @@
 # coding=utf-8
-from __future__ import absolute_import
 import os
 import re
 import time
@@ -8,7 +7,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from dj_utils import settings as u_settings
+from . import settings as u_settings
 
 
 def natural_sorted(iterable, cmp_func=None, reverse=False):

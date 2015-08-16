@@ -1,9 +1,7 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.core.management import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.apps.registry import apps as project_apps
-from dj_utils.management.commands.dju_sqldropallindexes import get_apps_list
+from .dju_sqldropallindexes import get_apps_list
 
 
 class Command(BaseCommand):

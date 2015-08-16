@@ -1,13 +1,12 @@
 # coding=utf-8
-from __future__ import absolute_import
 import os
 import subprocess
 from StringIO import StringIO
 from contextlib import contextmanager
 from PIL import Image, ImageFile
 from django.core.files.uploadedfile import UploadedFile
-from dj_utils.file import truncate_file
-from dj_utils import settings as u_settings
+from .file import truncate_file
+from . import settings as u_settings
 
 
 def image_get_format(f):

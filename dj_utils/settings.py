@@ -1,25 +1,25 @@
 # coding=utf-8
-from __future__ import absolute_import
 import os
 from django.conf import settings
 
 
+# ------------
+# COMMON SETTINGS
+# ------------
 USE_HTTPS = getattr(settings, 'USE_HTTPS', False)
 
 LOG_DIR = getattr(settings, 'LOG_DIR', os.path.join(settings.BASE_DIR, 'logs').replace('\\', '/'))
 
-UTILS_EMAIL_DEBUG_IN_CONSOLE = getattr(settings, 'UTILS_EMAIL_DEBUG_IN_CONSOLE', True)
-UTILS_EMAIL_DEBUG_IN_FILES = getattr(settings, 'UTILS_EMAIL_DEBUG_IN_FILES', True)
-UTILS_EMAIL_DEBUG_PATH = getattr(settings, 'UTILS_EMAIL_DEBUG_PATH',
-                                 os.path.join(LOG_DIR, 'debug_email').replace('\\', '/'))
+EMAIL_RETURN_PATH = getattr(settings, 'EMAIL_RETURN_PATH', None)
+EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)  # list of emails
 
-GRAVATAR_DEFAULT_SIZE = getattr(settings, 'GRAVATAR_DEFAULT_SIZE', 50)
-# 404, mm, identicon, monsterid, wavatar, retro, blank, http://mysite.com/default.jpg
-GRAVATAR_DEFAULT_IMAGE = getattr(settings, 'GRAVATAR_DEFAULT_IMAGE', 'mm')
-GRAVATAR_RATING = getattr(settings, 'GRAVATAR_RATING', 'g')  # g, pg, r, x
-GRAVATAR_SECURE = getattr(settings, 'GRAVATAR_SECURE', False)
+LANGUAGE_CODES = tuple(t[0] for t in settings.LANGUAGES)
 
-EMAIL_DOMAIN_BLACK_LIST = getattr(settings, 'EMAIL_DOMAIN_BLACK_LIST', (
+
+# ------------
+# SENDING EMAIL
+# ------------
+DJU_EMAIL_DOMAIN_BLACK_LIST = getattr(settings, 'DJU_EMAIL_DOMAIN_BLACK_LIST', (
     'mailinator.com', '10minutemail.com', 'spambog.com', 'tempinbox.com', 'mailmetrash.com',
     'tempemail.net', 'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'guerrillamail.com',
     'guerrillamail.net', 'guerrillamail.biz', 'guerrillamail.org', 'guerrillamail.de', 'spam4.me', 'spam.su',
@@ -28,25 +28,16 @@ EMAIL_DOMAIN_BLACK_LIST = getattr(settings, 'EMAIL_DOMAIN_BLACK_LIST', (
     'uroid.com', 'rmqkr.net',
 ))
 
-SITE_DOMAIN = getattr(settings, 'SITE_DOMAIN', 'localhost')
-DOMAIN_TITLE = getattr(settings, 'DOMAIN_TITLE', SITE_DOMAIN)
-
-EMAIL_RETURN_PATH = getattr(settings, 'EMAIL_RETURN_PATH', None)
-EMAIL_REPLY_TO = getattr(settings, 'EMAIL_REPLY_TO', None)  # list of emails
-
-EMAIL_DEFAULT_CONTEXT = getattr(settings, 'EMAIL_DEFAULT_CONTEXT', 'dj_utils.context_processors.email_default')
-
-LANGUAGES_CODES = tuple(t[0] for t in settings.LANGUAGES)
+DJU_EMAIL_DEFAULT_CONTEXT = getattr(settings, 'DJU_EMAIL_DEFAULT_CONTEXT', 'dj_utils.context_processors.email_default')
 
 
 # ------------
 # IMAGES UPLOAD
 # ------------
-
-# шлях відносно MEDIA ('dir', 'dir1/dir2')
+# path that relatively MEDIA. For example: 'dir' or 'dir1/dir2'
 DJU_IMG_UPLOAD_SUBDIR = getattr(settings, 'DJU_IMG_UPLOAD_SUBDIR', 'upload-img')
 
-# профіль по замовчуванню (решту профілів будуть наслідувати опції, якщо вони в них відсутні)
+# default profile (other profiles will extend from this if they won't set some parameters)
 DJU_IMG_UPLOAD_PROFILE_DEFAULT = {
     'PATH': 'common',                 # підпапка в DJU_UPLOAD_SUBDIR ('dir', 'dir1/dir2')
     'TYPES': ('GIF', 'JPEG', 'PNG'),  # формати, які підтримуються
@@ -68,7 +59,7 @@ DJU_IMG_UPLOAD_PROFILE_THUMBNAIL_DEFAULT = {
     'JPEG_QUALITY': 90,
 }
 
-# профілі
+# profiles
 DJU_IMG_UPLOAD_PROFILES = getattr(settings, 'DJU_IMG_UPLOAD_PROFILES', {})
 
 DJU_IMG_UPLOAD_TMP_PREFIX = getattr(settings, 'DJU_IMG_UPLOAD_TMP_PREFIX', '__tmp__')
@@ -80,8 +71,32 @@ DJU_IMG_CONVERT_JPEG_TO_RGB = getattr(settings, 'DJU_IMG_CONVERT_JPEG_TO_RGB', F
 
 
 # ------------
-# OTHER
+# EMAIL DEBUGGING
+# ------------
+DJU_EMAIL_DEBUG_IN_CONSOLE = getattr(settings, 'DJU_EMAIL_DEBUG_IN_CONSOLE', True)
+DJU_EMAIL_DEBUG_IN_FILES = getattr(settings, 'DJU_EMAIL_DEBUG_IN_FILES', True)
+DJU_EMAIL_DEBUG_PATH = getattr(settings, 'DJU_EMAIL_DEBUG_PATH',
+                               os.path.join(LOG_DIR, 'debug_email').replace('\\', '/'))
+
+
+# ------------
+# GRAVATAR
+# ------------
+DJU_GRAVATAR_DEFAULT_SIZE = getattr(settings, 'DJU_GRAVATAR_DEFAULT_SIZE', 50)
+# 404, mm, identicon, monsterid, wavatar, retro, blank, http://mysite.com/default.jpg
+DJU_GRAVATAR_DEFAULT_IMAGE = getattr(settings, 'DJU_GRAVATAR_DEFAULT_IMAGE', 'mm')
+DJU_GRAVATAR_RATING = getattr(settings, 'DJU_GRAVATAR_RATING', 'g')  # g, pg, r, x
+DJU_GRAVATAR_SECURE = getattr(settings, 'DJU_GRAVATAR_SECURE', False)
+
+
+# ------------
+# FILESYSTEM PERMISSIONS
 # ------------
 DJU_CHMOD_DIR = getattr(settings, 'DJU_CHMOD_DIR', 0o775)    # права на створені папки
 DJU_CHMOD_FILE = getattr(settings, 'DJU_CHMOD_DIR', 0o664)   # права на створені файли
+
+
+# ------------
+# OTHER
+# ------------
 DJU_RW_FILE_BUFFER_SIZE = getattr(settings, 'DJU_RW_FILE_BUFFER_SIZE', 8192)  # розмір буферу при читанні/запису файлів

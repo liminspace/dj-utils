@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import
 from django.conf import settings
 from dj_utils.management import LoggingBaseCommand
 from dj_utils.upload import remake_thumbs
