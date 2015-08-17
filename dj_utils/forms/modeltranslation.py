@@ -1,7 +1,5 @@
 from django import forms
 from django.utils.translation import string_concat, ugettext_lazy as _
-from modeltranslation.translator import translator
-from modeltranslation.utils import build_localized_fieldname, get_language
 
 
 def formfield_exclude_translations(db_field, **kwargs):
@@ -14,6 +12,7 @@ def formfield_exclude_translations(db_field, **kwargs):
         field = db_field.formfield(**kwargs)
     if not field:
         return field
+    from modeltranslation.translator import translator
     trans_opts = translator.get_options_for_model(db_field.model)
     if db_field.name in trans_opts.fields:
         field.widget.attrs['class'] = '{0} {1}'.format(
@@ -30,6 +29,8 @@ def formfield_exclude_translations(db_field, **kwargs):
 
 def formfield_exclude_original(db_field, **kwargs):
     """ only localized fields """
+    from modeltranslation.translator import translator
+    from modeltranslation.utils import get_language
     trans_opts = translator.get_options_for_model(db_field.model)
     if db_field.name in trans_opts.fields:
         return None
@@ -47,6 +48,8 @@ def formfield_exclude_original(db_field, **kwargs):
 
 def formfield_exclude_irrelevant(db_field, **kwargs):
     """ only localized fields """
+    from modeltranslation.translator import translator
+    from modeltranslation.utils import get_language
     trans_opts = translator.get_options_for_model(db_field.model)
     if db_field.name in trans_opts.fields:
         return None
@@ -72,6 +75,8 @@ def formfield_exclude_irrelevant(db_field, **kwargs):
 
 
 def localize_fieldname(field_name, lang=None):
+    from modeltranslation.utils import build_localized_fieldname
+    from modeltranslation.utils import get_language
     if lang is None:
         lang = get_language()
     return build_localized_fieldname(field_name, lang)
