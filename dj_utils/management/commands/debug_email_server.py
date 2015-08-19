@@ -79,7 +79,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         env = os.environ.copy()
-        env['PYTHONPATH'] = ':'.join(sys.path)
+        env['PYTHONPATH'] = os.pathsep.join(sys.path)
+        if os.name == 'nt':
+            for k in env:
+                env[k] = env[k].encode('utf-8')
         subprocess.call([
             sys.executable,
             '-m', 'smtpd', '-n', '-c', 'dj_utils.management.commands.debug_email_server.DebuggingServer',
