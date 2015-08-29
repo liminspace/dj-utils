@@ -7,6 +7,6 @@ def email_default(request=None):
     Default context for render email templates.
     """
     return {
-        'SITE': lambda: Site.objects.get_current(),
+        'SITE': Site.objects.get_current,
         'HOMEPAGE_URL': full_url,
     }

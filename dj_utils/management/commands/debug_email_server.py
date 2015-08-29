@@ -16,6 +16,7 @@ class DebuggingServer(SMTPServer):
         SMTPServer.__init__(self, *args, **kwargs)
         sys.stdout = codecs.getwriter('utf8')(sys.stdout)
         sys.stderr = codecs.getwriter('utf8')(sys.stderr)
+        print 'Debug email server is running. Now you can send emails to SMTP localhost:10250.'
 
     @staticmethod
     def _get_subject(data):
