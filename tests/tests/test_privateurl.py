@@ -1,6 +1,6 @@
 import datetime
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.dispatch import receiver
 from django.http import HttpResponse
 from django.shortcuts import resolve_url
@@ -94,6 +94,13 @@ class TestPrivateUrl(TestCase):
         b = PrivateUrl.objects.get(action=action)
         self.assertEqual(a, b)
         self.assertEqual(len(b.action), len(action))
+
+    def test_reverse(self):
+        a = PrivateUrl.create('a' * 32)
+        try:
+            a.get_absolute_url()
+        except NoReverseMatch, e:
+            raise self.failureException('Private url reverse url error ({}).'.format(e))
 
 
 class TestPrivateUrlView(TestCase):
