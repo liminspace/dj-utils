@@ -88,6 +88,13 @@ class TestPrivateUrl(TestCase):
         j.used_counter_inc()
         self.assertIsNone(j.pk)
 
+    def test_long_action_name_fail(self):
+        action = 'a' * 32
+        a = PrivateUrl.create(action)
+        b = PrivateUrl.objects.get(action=action)
+        self.assertEqual(a, b)
+        self.assertEqual(len(b.action), len(action))
+
 
 class TestPrivateUrlView(TestCase):
     @classmethod

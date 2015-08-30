@@ -19,7 +19,7 @@ class PrivateUrlManager(models.Manager):
 
 class PrivateUrl(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('user'), null=True, blank=True)
-    action = models.SlugField(verbose_name=_('action'), max_length=24, db_index=True)
+    action = models.SlugField(verbose_name=_('action'), max_length=32, db_index=True)
     token = models.SlugField(verbose_name=_('token'), max_length=64)
     expire = models.DateTimeField(verbose_name=_('expire'), null=True, blank=True, db_index=True)
     data = JSONField(verbose_name=_('data'), use_decimal=True)
