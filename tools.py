@@ -113,7 +113,7 @@ def test(*args):
 
 
 def release(*args):
-    subprocess.call(['python', 'setup.py', 'sdist', 'upload'])
+    subprocess.call(['python', 'setup.py', 'bdist_wheel', 'upload'])
 
 
 if __name__ == '__main__':
