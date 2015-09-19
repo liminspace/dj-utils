@@ -7,13 +7,19 @@
 @is_safari = navigator.userAgent.indexOf('Safari') isnt -1 and navigator.userAgent.indexOf('Chrome') is -1
 
 
+# Визначає, чи obj є масивом
+is_array = (obj) -> Object.prototype.toString.call(obj) is '[object Array]'
+
+
 # Створює і відправляє POST-форму
 # *використовується модуль jquery.cookie, якщо не переданий параметр csrf
 @send_post_form = (fields, action, csrf) ->
   if csrf isnt false
     fields['csrfmiddlewaretoken'] = csrf or $.cookie('csrf-token')
   form = $('<form>', {method: 'post', action: action or ''}).css(display: 'none', position: 'absolute')
-  form.append($('<input>', {name: fn, value: fv})) for own fn, fv of fields
+  for own fn, fv of fields
+    fv = [fv] if not is_array(fv)
+    form.append($('<input>', {name: fn, value: v})) for v in fv
   form.appendTo($('body')).submit().remove()
   false
 
@@ -21,7 +27,9 @@
 # Створює і відрпавляє GET-форму
 @send_get_form = (fields, action) ->
   form = $('<form>', {method: 'get', action: action or ''}).css(display: 'none', position: 'absolute')
-  form.append($('<input>', {name: fn, value: fv})) for own fn, fv of fields
+  for own fn, fv of fields
+    fv = [fv] if not is_array(fv)
+    form.append($('<input>', {name: fn, value: v})) for v in fv
   form.appendTo($('body')).submit().remove()
   false
 
