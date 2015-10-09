@@ -63,6 +63,8 @@ def image_save_buffer_fix(baxblock=1048576):
 
 
 def _save_img(img, f, *args, **kwargs):
+    if isinstance(f, UploadedFile):
+        f = f.file
     modes = ({},
              {'mb_x': 5},
              {'mb_x': 10},
@@ -85,7 +87,7 @@ def _save_img(img, f, *args, **kwargs):
             last_error = e
     if last_error:
         raise last_error
-    if img.format == 'JPEG' and u_settings.DJU_IMG_USE_JPEGTRAN:
+    if image_get_format(f) == 'jpeg' and u_settings.DJU_IMG_USE_JPEGTRAN:
         f.seek(0)
         try:
             p = subprocess.Popen(['jpegtran', '-copy', 'none', '-optimize', '-progressive'],

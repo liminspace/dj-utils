@@ -84,3 +84,5 @@ TEMPLATES = [
 ]
 
 DJU_EMAIL_DEFAULT_CONTEXT = 'tests.context_processors.static'
+DJU_IMG_USE_JPEGTRAN = True
+DJU_IMG_CONVERT_JPEG_TO_RGB = True

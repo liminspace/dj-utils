@@ -6,11 +6,16 @@ from django.test import TestCase
 from dj_utils.image import adjust_image, image_get_format, is_image
 
 
-def create_test_image(w, h):
-    img = Image.new('RGB', (w, h), color='#FFFFFF')
+def create_test_image(w, h, c='RGB'):
+    colors = {
+        'RGB': {1: '#DDEEFF', 2: '#667788', 3: '#887766'},
+        'CMYK': {1: (120, 130, 140, 25), 2: (80, 100, 120, 50), 3: (120, 100, 80, 75)},
+    }
+    color = colors[c]
+    img = Image.new(c, (w, h), color=color[1])
     d = ImageDraw(img)
-    d.line((-1, -1) + img.size, fill='#888888', width=2)
-    d.line((-1, img.size[1], img.size[0], -1), fill='#888888', width=2)
+    d.line((-1, -1) + img.size, fill=color[2], width=2)
+    d.line((-1, img.size[1], img.size[0], -1), fill=color[3], width=2)
     return img
 
 
@@ -104,6 +109,13 @@ class TestAdjustImage(TestCase):
     def test_new_image(self):
         self.make_files_for_images()
         self.assertIsInstance(adjust_image(self.f_200x200_jpeg, return_new_image=True), StringIO)
+
+    def test_cmyk_to_rgb(self):
+        img_200x200_cmyk = create_test_image(200, 200, c='CMYK')
+        f_200x200_jpeg_cmyk = get_img_file(img_200x200_cmyk)
+        t = adjust_image(f_200x200_jpeg_cmyk, return_new_image=True)
+        self.assertIsInstance(t, StringIO)
+        self.assertEqual(Image.open(t).mode, 'RGB')
 
 
 class TestImageGetFormat(TestCase):
