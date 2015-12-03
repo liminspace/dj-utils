@@ -17,8 +17,8 @@ setup(
     packages=find_packages(),  # exclude=('tests.*', 'tests', 'example')
     include_package_data=True,
     zip_safe=False,  # тому, що вкладаємо статику
-    requires=[
-        'django<1.10',
+    install_requires=[
+        'django',
         'simplejson'
     ],
 )
