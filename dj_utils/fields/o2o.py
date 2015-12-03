@@ -1,17 +1,16 @@
 from django.db.models import OneToOneField
-from django.db.models.fields.related import SingleRelatedObjectDescriptor
+from django.db.models.fields.related_descriptors import ReverseOneToOneDescriptor
 from django.db.transaction import atomic
 
 
-class AutoSingleRelatedObjectDescriptor(SingleRelatedObjectDescriptor):
+class AutoSingleRelatedObjectDescriptor(ReverseOneToOneDescriptor):
     @atomic
     def __get__(self, instance, instance_type=None):
         model = getattr(self.related, 'related_model', self.related.model)
         try:
             return super(AutoSingleRelatedObjectDescriptor, self).__get__(instance, instance_type)
         except model.DoesNotExist:
-            obj = model(**{self.related.field.name: instance})
-            obj.save()
+            model.objects.get_or_create(**{self.related.field.name: instance})
             return super(AutoSingleRelatedObjectDescriptor, self).__get__(instance, instance_type)
 
 

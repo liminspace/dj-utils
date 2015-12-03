@@ -1,8 +1,8 @@
-Django==1.8.5
+Django==1.9
 Pillow==3.0.0
 coverage==4.0
-django-modeltranslation==0.10.1
-django-redis==4.2.0
+django-modeltranslation==0.10.2
+django-redis==4.3.0
 mysql-python==1.2.5
-pytz==2015.6
-simplejson==3.8.0
+pytz==2015.7
+simplejson==3.8.1
