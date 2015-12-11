@@ -66,7 +66,7 @@ def get_mt_fields(value, arg):
         yield base_field
 
 
-@register.assignment_tag
+@register.simple_tag
 def translate_mt_field(form, field_name, lang):
     try:
         base_field = form[field_name]

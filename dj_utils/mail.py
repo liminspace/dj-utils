@@ -119,7 +119,7 @@ class RenderMailSender(object):
             if isinstance(node, ExtendsNode):
                 eb = dict((n.name, n) for n in node.nodelist if isinstance(n, BlockNode))
                 eb.update(extended_blocks)
-                try:
+                try:  # todo https://docs.djangoproject.com/en/1.9/releases/1.9/#template-loader-apis-have-changed
                     return self._render_template_block(name, nodes=node.get_parent(self._context_instance),
                                                        extended_blocks=eb)
                 except self.TemplateNodeNotFound:

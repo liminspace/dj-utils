@@ -49,8 +49,6 @@ class JSONEncoder(simplejson.JSONEncoder):
 
 
 class JSONFieldBase(models.Field):
-    __metaclass__ = models.SubfieldBase
-
     DEFAULT_USE_DECIMAL = False
 
     def __init__(self, *args, **kwargs):
@@ -92,7 +90,10 @@ class JSONFieldBase(models.Field):
         return simplejson.dumps(value, **self.dump_kwargs)
 
     def value_to_string(self, obj):
-        value = self._get_val_from_obj(obj)
+        if obj is not None:
+            value = getattr(obj, self.attname)
+        else:
+            value = self.get_default()
         return self.get_db_prep_value(value, None)
 
     def value_from_object(self, obj):

@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 
 class NullableEmailField(models.EmailField):
     description = _(u'EmailField that stores NULL but returns empty string')
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         kwargs['null'] = True

@@ -249,7 +249,7 @@ def int_subtract(value, arg):
         return ''
 
 
-@register.assignment_tag
+@register.simple_tag
 def assign(value):
     """
     Setting value to a variable.
@@ -258,7 +258,7 @@ def assign(value):
     return value
 
 
-@register.assignment_tag
+@register.simple_tag
 def assign_format_str(string, *args, **kwargs):
     """
     Форматує стрічку і зберігає її в змінній.
@@ -479,6 +479,6 @@ def add_full_url_prefix(value, arg=None):
     return mark_safe(full_url(path=value, secure=arg))
 
 
-@register.assignment_tag(name='make_thumb_url')
+@register.simple_tag(name='make_thumb_url')
 def make_thumb_url_(url, label=None, ext=None):
     return make_thumb_url(url, label=label, ext=ext) or url
