@@ -8,7 +8,7 @@ from dj_utils.upload import (get_profile_configs, generate_filename, add_thumb_s
                              gen_thumb_label)
 
 
-def upload_image(request):
+def upload_image(request):  # todo remove! use dju-image
     """
     Вюха, яка зберігає завантажений файл.
     Структура запиту:

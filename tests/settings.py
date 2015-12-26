@@ -11,7 +11,6 @@ SITE_ID = 1
 
 INSTALLED_APPS = (
     'dj_utils',
-    'dj_utils.privateurl',
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',

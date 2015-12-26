@@ -1,4 +1,4 @@
-Django==1.9
+Django<1.10
 Pillow==3.0.0
 coverage==4.0
 django-modeltranslation==0.11rc1

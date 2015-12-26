@@ -9,6 +9,9 @@ from .file import truncate_file
 from . import settings as u_settings
 
 
+# todo remove! use dju-image
+
+
 def image_get_format(f):
     """
     Визначає формат зображення.

@@ -5,6 +5,9 @@ from django.utils.dateparse import parse_datetime, parse_date, parse_time
 from django.utils.timezone import is_aware
 
 
+# todo check, cover tests and move to dju-common
+
+
 class JSONEncoder(simplejson.JSONEncoder):
     @staticmethod
     def custom_obj(custom_type, data):
